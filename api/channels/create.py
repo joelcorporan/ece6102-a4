@@ -1,39 +1,73 @@
 import json
 import logging
-import os
+import re
+# import os
 import time
-import uuid
+# import uuid
 
 import boto3
 dynamodb = boto3.resource('dynamodb')
 
 
-def create(event, context):
+def handler(event, context):
+
     data = json.loads(event['body'])
-    if 'text' not in data:
+    if 'name' not in data:
         logging.error("Validation Failed")
-        raise Exception("Couldn't create the todo item.")
-        return
+        response = {
+            "statusCode": 403,
+            "body": json.dumps({'error': 'Invalid Channel Id'})
+        }
 
-    timestamp = int(time.time() * 1000)
+        return response
 
-    table = dynamodb.Table(os.environ['DYNAMODB_TABLE'])
 
-    item = {
-        'id': str(uuid.uuid1()),
-        'text': data['text'],
-        'checked': False,
-        'createdAt': timestamp,
-        'updatedAt': timestamp,
-    }
+    tableId = re.sub(r'[^A-Za-z0-9-]', '', re.sub(r'\s+', '-', data['name']).lower())
 
-    # write the todo to the database
-    table.put_item(Item=item)
+    try:
+        table = dynamodb.create_table(
+            TableName= tableId,
+            KeySchema=[
+                {
+                    'AttributeName': 'email',
+                    'KeyType': 'HASH'  #Partition key
+                },
+                {
+                    'AttributeName': 'timestamp',
+                    'KeyType': 'RANGE'  #Sort key
+                }
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'email',
+                    'AttributeType': 'S'
+                },
+                {
+                    'AttributeName': 'timestamp',
+                    'AttributeType': 'S'
+                },
+
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
+            
+            }
+        )
+    except:
+        response = {
+            "statusCode": 403,
+            "body": json.dumps({'error': 'Channel already exists'})
+        }
+
+        return response
+
+    time.sleep(10)
 
     # create a response
     response = {
         "statusCode": 200,
-        "body": json.dumps(item)
+        "body": json.dumps({'response': 'Channel Created'})
     }
 
     return response

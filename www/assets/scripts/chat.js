@@ -2,6 +2,7 @@ $('.chat[data-chat=person2]').addClass('active-chat');
 $('.person[data-chat=person2]').addClass('active');
 
 $('.left .person').mousedown(function(){
+    window.location.origin = `/channels/${}`
     if ($(this).hasClass('.active')) {
         return false;
     } else {

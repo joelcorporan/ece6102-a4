@@ -1,79 +1,58 @@
-service: serverless-rest-api-with-dynamodb
+service: ece6102-chatroom
 
 frameworkVersion: ">=1.1.0 <2.0.0"
 
 provider:
   name: aws
   runtime: python2.7
-  environment:
-    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+  region: us-east-1
+  stage: ${opt:stage, self:provider.custom.defaultStage}
+  profile: ${self:provider.custom.profiles.${self:provider.stage}}
+  memorySize: 512
+  timeout: 300
+  custom:
+    VERSION: v2
+    defaultStage: dev
+    profiles:
+      dev: personal
+      prod: personal
   iamRoleStatements:
     - Effect: Allow
       Action:
+        - dynamodb:CreateTable
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:GetItem
         - dynamodb:PutItem
-        - dynamodb:UpdateItem
-        - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TABLE}"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/*"
 
 functions:
   create:
-    handler: todos/create.create
+    handler: channels/create.handler
+    name: chatroom-api-${self:provider.custom.VERSION}-channel-create
+    description: Handles the creation of a new channel
     events:
       - http:
-          path: todos
+          path: ${self:provider.custom.VERSION}/channels
           method: post
           cors: true
 
-  list:
-    handler: todos/list.list
-    events:
-      - http:
-          path: todos
-          method: get
-          cors: true
-
   get:
-    handler: todos/get.get
+    handler: channels/get.handler
+    name: chatroom-api-${self:provider.custom.VERSION}-messages
+    description: Handles all the messages from achannel
     events:
       - http:
-          path: todos/{id}
+          path: ${self:provider.custom.VERSION}/channels/{id}
           method: get
           cors: true
 
-  update:
-    handler: todos/update.update
+  publish:
+    handler: channels/message.handler
+    name: chatroom-api-${self:provider.custom.VERSION}-messages-publish
+    description: Handles message publishing in a channel
     events:
       - http:
-          path: todos/{id}
-          method: put
+          path: ${self:provider.custom.VERSION}/channels/{id}/messages
+          method: post
           cors: true
-
-  delete:
-    handler: todos/delete.delete
-    events:
-      - http:
-          path: todos/{id}
-          method: delete
-          cors: true
-
-resources:
-  Resources:
-    TodosDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
-      Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: id
-            AttributeType: S
-        KeySchema:
-          -
-            AttributeName: id
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        TableName: ${self:provider.environment.DYNAMODB_TABLE}
