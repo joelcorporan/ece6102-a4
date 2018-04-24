@@ -69,5 +69,6 @@ After signing in, the user can see his/her chat channels.
 
 4. There should be a way to store/send a message to a channel.
 
+# 3. System Diagram
 
-
+![](https://github.com/joelcorporan/ece6102-a4/blob/master/img/p4.png)
