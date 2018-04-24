@@ -1,6 +1,6 @@
 indexes:
-- kind: Greeting
+- kind: Chatroom
   ancestor: yes
   properties:
-  - name: date
+  - name: name
     direction: desc

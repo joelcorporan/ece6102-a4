@@ -1,10 +1,10 @@
-# import os
 import json
-import boto3
-from boto3.dynamodb.conditions import Key, Attr
-from datetime import datetime
+import logging
+import time
+import uuid
 
-dynamodb = boto3.client('dynamodb')
+import boto3
+dynamodb = boto3.resource('dynamodb')
 
 
 def handler(event, context):
@@ -19,23 +19,27 @@ def handler(event, context):
         return response
 
     tableName = event['pathParameters']['id']
-
+    
     try:
 
-        response = dynamodb.describe_table(TableName=tableName)
+        table = dynamodb.Table(tableName)
+
+        # fetch all messages from the channel
+        result = table.scan()
 
         # create a response
         response = {
-            "statusCode": 204
+            "statusCode": 200,
+            "body": json.dumps(result['Items'])
         }
 
         return response
 
-    except Exception as e:
-        print(e)
+    except:
         response = {
             "statusCode": 403,
             "body": json.dumps({'error': 'Channel does not exists'})
         }
 
         return response
+

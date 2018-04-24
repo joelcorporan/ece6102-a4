@@ -1,0 +1,14 @@
+<!-- Header -->
+<header id="header">
+    <h1><a href="/" class="logo"><strong>Dependable Key-Value Chat</strong></a></h1>
+    <nav class="main">
+        <ul>
+            {% if user %}
+                <li class="log">
+                    Welcome, {{user}}!
+                </li>
+            {% endif %}
+            <li><a href="{{ url|safe }}" class="user button">{{ url_linktext }}</a></li>
+        </ul>
+    </nav>
+</header>

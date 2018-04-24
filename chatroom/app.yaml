@@ -8,8 +8,8 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /bootstrap
-  static_dir: bootstrap
+- url: /assets
+  static_dir: assets
 
 - url: /.*
   script: guestbook.app

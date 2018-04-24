@@ -20,6 +20,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:CreateTable
+        - dynamodb:DescribeTable
         - dynamodb:Query
         - dynamodb:Scan
         - dynamodb:GetItem
@@ -39,8 +40,8 @@ functions:
 
   get:
     handler: channels/get.handler
-    name: chatroom-api-${self:provider.custom.VERSION}-messages
-    description: Handles all the messages from achannel
+    name: chatroom-api-${self:provider.custom.VERSION}-channels-check
+    description: Check if channel exists
     events:
       - http:
           path: ${self:provider.custom.VERSION}/channels/{id}
@@ -48,11 +49,21 @@ functions:
           cors: true
 
   publish:
-    handler: channels/message.handler
+    handler: messages/publish.handler
     name: chatroom-api-${self:provider.custom.VERSION}-messages-publish
     description: Handles message publishing in a channel
     events:
       - http:
           path: ${self:provider.custom.VERSION}/channels/{id}/messages
           method: post
+          cors: true
+
+  messages:
+    handler: messages/message.handler
+    name: chatroom-api-${self:provider.custom.VERSION}-messages
+    description: Handles all the messages from achannel
+    events:
+      - http:
+          path: ${self:provider.custom.VERSION}/channels/{id}/messages
+          method: get
           cors: true

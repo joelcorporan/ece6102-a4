@@ -1,24 +1,12 @@
 #!/usr/bin/env python
 
-# Copyright 2016 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # [START imports]
 import os
 import urllib
+import json
+import logging
 
-from google.appengine.api import users
+from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
 
 import jinja2
@@ -30,34 +18,79 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 # [END imports]
 
-DEFAULT_GUESTBOOK_NAME = 'default_guestbook'
+API_ENDPOINT = 'https://c5yaek0b1l.execute-api.us-east-1.amazonaws.com/dev/v2/'
 
+def getUser(uri):
+    user = users.get_current_user()
 
-# We set a parent key on the 'Greetings' to ensure that they are all
-# in the same entity group. Queries across the single entity group
-# will be consistent. However, the write rate should be limited to
-# ~1/second.
+    if user:
+        url = users.create_logout_url(uri)
+        url_linktext = 'Logout'
+    else:
+        url = users.create_login_url(uri)
+        url_linktext = 'Login'
 
-def guestbook_key(guestbook_name=DEFAULT_GUESTBOOK_NAME):
-    """Constructs a Datastore key for a Guestbook entity.
+    return (user, url, url_linktext)
 
-    We use guestbook_name as the key.
+def getCurrentChannels(entities):
+    """Return the current Channels.
+
     """
-    return ndb.Key('Guestbook', guestbook_name)
+    return list(set(map(lambda key: key.parent().id().decode('utf_8'), entities)))
 
+def getMessages(channel):
+    """Return the messages on a channel.
 
-# [START greeting]
-class Author(ndb.Model):
-    """Sub model for representing an author."""
-    identity = ndb.StringProperty(indexed=False)
-    email = ndb.StringProperty(indexed=False)
+    """
+    try:
+        url = "%schannels/%s/messages" % (API_ENDPOINT, channel)
+        result = urlfetch.fetch(url)
 
+        if result.status_code == 200:
+            return (None, sorted(json.loads(result.content), key=lambda x : x['timestamp']))
+        else:
+            return (result.status_code, None)
 
-class Greeting(ndb.Model):
-    """A main model for representing an individual Guestbook entry."""
-    author = ndb.StructuredProperty(Author)
-    content = ndb.StringProperty(indexed=False)
-    date = ndb.DateTimeProperty(auto_now_add=True)
+    except urlfetch.Error as error:
+        logging.exception('Caught exception fetching url')
+        return (error, None)
+
+def publishMessage(channel, email, message):
+    """Publish messages on a channel.
+
+    """
+    try:
+        data = json.dumps({'email': email, 'text': message})
+        headers = {'Content-Type': 'application/json'}
+
+        result = urlfetch.fetch(
+                    url = "%s%s/messages" % (API_ENDPOINT, channel),
+                    payload = data,
+                    method = urlfetch.POST,
+                    headers = headers
+                )
+
+        if result.status_code == 200:
+            return (None, result.content)
+        else:
+            return (result.status_code, None)
+
+    except urlfetch.Error as error:
+        logging.exception('Caught exception fetching url')
+        return (error, None)
+
+def chatroom_key(chatroom):
+    """Constructs a Datastore key for a Chatroom entity.
+
+    We use chatroom_key as the key.
+    """
+    return ndb.Key('channel', chatroom)
+
+# [START Chatroom]
+class Chatroom(ndb.Model):
+    """Sub model for representing an Chatroom."""
+    name = ndb.StringProperty(indexed=False)
+    created = ndb.DateTimeProperty(auto_now_add=True)
 # [END greeting]
 
 
@@ -65,31 +98,40 @@ class Greeting(ndb.Model):
 class MainPage(webapp2.RequestHandler):
 
     def get(self):
-        guestbook_name = self.request.get('guestbook_name',
-                                          DEFAULT_GUESTBOOK_NAME)
-        greetings_query = Greeting.query(
-            ancestor=guestbook_key(guestbook_name)).order(-Greeting.date)
-        greetings = greetings_query.fetch(10)
+        user = getUser(self.request.uri)
 
-        user = users.get_current_user()
-        if user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
+        # print()
 
         template_values = {
-            'user': user,
-            'greetings': greetings,
-            'guestbook_name': urllib.quote_plus(guestbook_name),
-            'url': url,
-            'url_linktext': url_linktext,
+            'user': user[0],
+            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
+            'url': user[1],
+            'url_linktext': user[2],
         }
 
-        template = JINJA_ENVIRONMENT.get_template('index.html')
+        template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
+
 # [END main_page]
+
+# [START Search]
+
+class Search(webapp2.RequestHandler):
+
+    def get(self):
+        user = getUser(self.request.uri)
+
+        template_values = {
+            'user': user[0],
+            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
+            'url': user[1],
+            'url_linktext': user[2],
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('search.html')
+        self.response.write(template.render(template_values))
+
+# [END Search]
 
 
 # [START guestbook]
@@ -119,12 +161,21 @@ class Guestbook(webapp2.RequestHandler):
 
 # channel API
 
-class DisplayChannel(webapp2.RequestHandler):
+class Channels(webapp2.RequestHandler):
 
-    def get(self):
-        channel_id = self.request.get('channel_id', 0)
-        print(channel_id)
+    def get(self, id):
+        identifier = id
+
+        result = getMessages(id)
+
+        if result[0] is None:
+            messages = result[1]
+        else:
+            messages = None
+
         user = users.get_current_user()
+
+        print(user.email())
         if user:
             # need to query the channel data for that user
 
@@ -137,10 +188,12 @@ class DisplayChannel(webapp2.RequestHandler):
 
         template_values = {
             'user': user,
+            'channel': id,
+            'messages': messages,
             'url_linktext': url_linktext,
         }
 
-        template = JINJA_ENVIRONMENT.get_template('index.html')
+        template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
 
 
@@ -183,8 +236,9 @@ class DisplayChannelID(webapp2.RequestHandler):
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/sign', Guestbook),
-    ('/channels', DisplayChannel),
-    ('/channels/(\S+)', DisplayChannelID),
+    # ('/sign', Guestbook),
+    # ('/channels', Channels),
+    ('/channels/(\S+)', Channels),
+    ('/search', Search)
 ], debug=True)
 # [END app]
