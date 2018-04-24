@@ -64,14 +64,14 @@ def publishMessage(channel, email, message):
         headers = {'Content-Type': 'application/json'}
 
         result = urlfetch.fetch(
-                    url = "%s%s/messages" % (API_ENDPOINT, channel),
+                    url = "%s/channels/%s/messages" % (API_ENDPOINT, channel),
                     payload = data,
                     method = urlfetch.POST,
                     headers = headers
                 )
 
         if result.status_code == 200:
-            return (None, result.content)
+            return (None, json.loads(result.content))
         else:
             return (result.status_code, None)
 
@@ -163,10 +163,8 @@ class Guestbook(webapp2.RequestHandler):
 
 class Channels(webapp2.RequestHandler):
 
-    def get(self, id):
-        identifier = id
-
-        result = getMessages(id)
+    def get(self, channel):
+        result = getMessages(channel)
 
         if result[0] is None:
             messages = result[1]
@@ -188,13 +186,16 @@ class Channels(webapp2.RequestHandler):
 
         template_values = {
             'user': user,
-            'channel': id,
+            'channel': channel,
             'messages': messages,
             'url_linktext': url_linktext,
         }
 
         template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
+
+    def post(self, channel):
+        pass
 
 
 class DisplayChannelID(webapp2.RequestHandler):
