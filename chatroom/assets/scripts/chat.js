@@ -4,37 +4,47 @@
 $('.left .person').mousedown(function(){
     // window.location.href = window.location.origin + `/channels/${$(this).attr('data-chat')}`
     // window.location.href = window.location.origin + `/channels/`
-    console.log(window.location.origin)
-    if ($(this).hasClass('.active')) {
-        return false;
-    } else {
-        var findChat = $(this).attr('data-chat');
-        var personName = $(this).find('.name').text();
-        $('.right .top .name').html(personName);
-        $('.chat').removeClass('active-chat');
-        $('.left .person').removeClass('active');
-        $(this).addClass('active');
-        $('.chat[data-chat = '+findChat+']').addClass('active-chat');
-    }
+    // console.log(window.location.origin)
+    // if ($(this).hasClass('.active')) {
+    //     return false;
+    // } else {
+    //     var findChat = $(this).attr('data-chat');
+    //     var personName = $(this).find('.name').text();
+    //     $('.right .top .name').html(personName);
+    //     $('.chat').removeClass('active-chat');
+    //     $('.left .person').removeClass('active');
+    //     $(this).addClass('active');
+    //     $('.chat[data-chat = '+findChat+']').addClass('active-chat');
+    // }
+});
+
+$('body').on('click', '.people .person', function() {
+    window.location.href = window.location.origin + `/channels/${$(this).data('chat')}`
 });
 
 
 try {
     var search = document.getElementById('search');
-    var button = document.getElementById('button');
-    var input = document.getElementById('input');
+    var button = document.getElementById('button-search');
+    var input = document.getElementById('input-search');
 
     function loading() {
-        search.classList.add('loading');
+        // search.classList.add('loading');
+
+        searchChannel(search);
         
-        setTimeout(function() {
-            search.classList.remove('loading');
-        }, 1500);
+        // setTimeout(function() {
+        //     search.classList.remove('loading');
+        // }, 1500);
     }
 
-    button.addEventListener('click', loading);
+    button.addEventListener('click', function() {
+        if ($(input).val() != "") {
+            searchChannel($(input).val(), search);
+        }
+    });
 
-    input.addEventListener('keydown', function() {
+    input.addEventListener('keydown', function(event) {
         if(event.keyCode == 13) loading();
     });
 
@@ -66,7 +76,7 @@ $(document).ready(function() {
 });
 
 function createChannel() {
-    console.log("here")
+
     const xhr = new XMLHttpRequest();
     var body = JSON.stringify({name: $('.input-wrapper input[type=text]').val()})
 
@@ -99,35 +109,33 @@ function createChannel() {
     xhr.send(body);
 }
 
-function validate() {
-    setTimeout(function() {
-        $( "#button-create" ).removeClass( "onclic" );
-        $( "#button-create" ).addClass( "validate", 450, upload_image );
-    }, 2250 );
-}
 
+function searchChannel(channel, search) {
 
-// HTTP Request
-function updateCartInstance(url, type, callback) {
+    var $channels = $('.people');
+
     const xhr = new XMLHttpRequest();
-    var body;
+    var body = JSON.stringify({name: $('.input-wrapper input[type=text]').val()})
 
-    xhr.open(type, url);
+    xhr.open("GET", `/search?channel=${channel}`);
     xhr.setRequestHeader("Content-type", "application/json");
     
     xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
             if(xhr.status >= 200 && xhr.status <= 299){
+                $template = $($('#channelItem').html())
 
+                $template.find('span.name').text(xhr.response);
+                $template.data('chat', xhr.response);
+
+                $channels.append($template);
 
             } else {
-                search.classList.add('error');
-    
-                setTimeout(function() {
-                    search.classList.remove('error');
-                }, 1500);
+                console.log(xhr)
             }
         }
+
+        // search.classList.remove('loading');
     };
 
     xhr.send(body);

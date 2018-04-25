@@ -106,6 +106,29 @@ def setChannel(channel):
         logging.exception('Caught exception fetching url')
         return (error, None)
 
+def getChannel(channel):
+    """Get channel.
+
+    """
+    try:
+        urlfetch.set_default_fetch_deadline(30)
+
+        print(channel)
+        result = urlfetch.fetch(
+            url = "%schannels/%s" % (API_ENDPOINT, channel),
+            method = urlfetch.GET
+        )
+
+        if result.status_code == 204:
+            return (None, channel)
+        else:
+            return (result.status_code, None)
+
+    except urlfetch.Error as error:
+        logging.exception('Caught exception fetching url')
+        return (error, None)
+
+
 def chatroom_key(chatroom):
     """Constructs a Datastore key for a Chatroom entity.
 
@@ -199,7 +222,6 @@ class Channels(webapp2.RequestHandler):
 
         user = users.get_current_user()
 
-        print(user.email())
         if user:
             # need to query the channel data for that user
 
@@ -239,33 +261,23 @@ class Channels(webapp2.RequestHandler):
             self.abort(403)
             self.response.write('empty')
 
+class SearchChannel(webapp2.RequestHandler):
 
+    def get(self):
 
-class DisplayChannelID(webapp2.RequestHandler):
+        channel = self.request.get('channel')
+        result = getChannel(channel)
 
-    def get(self, channel_id):
-        
-        print(channel_id)
-        user = users.get_current_user()
-        if user:
-            # need to query the channel data for that user
+        if result[0] is None and channel not in getCurrentChannels(Chatroom.query().fetch(keys_only=True)):
 
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
+            channel_key = channel
+            chatroom = Chatroom(parent=chatroom_key(channel_key))
+            chatroom.put()
+            
+            self.response.write(channel)
         else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-    
-
-        template_values = {
-            'user': user,
-            'url_linktext': url_linktext,
-            'active_chat' : channel_id,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('index.html')
-        self.response.write(template.render(template_values))
-
+            self.abort(403)
+            self.response.write('empty')
 
 
 
@@ -280,11 +292,9 @@ class DisplayChannelID(webapp2.RequestHandler):
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    # ('/sign', Guestbook),
     ('/channels', Channels),
-    # ('/channel', SetChannels),
+    ('/search', SearchChannel),
     ('/channels/(\S+)', Channels),
     ('/search', Search)
-    # ('/addChannel', addChannel)
 ], debug=True)
 # [END app]

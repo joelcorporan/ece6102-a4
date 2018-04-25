@@ -12,8 +12,8 @@
             <div class="top">
                 <div class="error-message"> Channel Not found</div>
                 <div id="search">
-                    <input id="input" placeholder="Search..."/>
-                    <button id="button"><i class="fa fa-search"></i></button>
+                    <input id="input-search" placeholder="Search..."/>
+                    <button id="button-search"><i class="fa fa-search"></i></button>
                     <div class="spinner"><i class="fa fa-spinner"></i></div>
                 </div>
                 <!-- <a href="#" class="new-item-menu-float">
@@ -33,16 +33,14 @@
                 {% for channel in channels %}
                     {% if channel == currentChannel %}
 
-                        <li class="person active" data-chat="person1">
-                            <!-- <img src="https://s13.postimg.org/ih41k9tqr/img1.jpg" alt="" /> -->
+                        <li class="person active" data-chat="{{ channel }}">
                             <span class="name">{{ channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
                     {% else %}
 
-                        <li class="person" data-chat="person1">
-                            <!-- <img src="https://s13.postimg.org/ih41k9tqr/img1.jpg" alt="" /> -->
+                        <li class="person" data-chat="{{ channel }}">
                             <span class="name">{{ channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
@@ -78,7 +76,7 @@
                 </div>
             </div> -->
 
-                <div class="chat active-chat" data-chat="person2">
+                <div class="chat active-chat" data-chat="{{ currentChannel }}">
                 <!-- <div class="conversation-start">
                     <span>Today, 5:38 PM</span>
                 </div> -->
@@ -256,5 +254,13 @@
     <div class="new-item-menu-label-text">Create Channel</div>
     <i class="fas fa-play new-item-menu-label-arrow"></i>
 </div>
+
+<script id='channelItem' type='text/template'>
+    <li class="person" data-chat="{{ channel }}">
+        <span class="name"></span>
+        <span class="time">2:09 PM</span>
+        <span class="preview">I was wondering...</span>
+    </li>
+</script>
 
 {% endblock %}
