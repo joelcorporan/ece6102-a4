@@ -287,6 +287,19 @@ body {
     height: 96px;
     padding: 29px;
 }
+
+.container .left .top .error-message {
+    text-align: center;
+    font-family: 'Oxygen', sans-serif;
+    color: #ff0808;
+    font-weight: 700;
+    display: none;
+}
+
+.container .left .top.error .error-message {
+    display: none;
+}
+
 .container .left .top:after {
     position: absolute;
     bottom: 0;
@@ -332,6 +345,13 @@ body {
     /*border-left: 1px solid #e6e6e6;*/
     width: calc(100% + 2px);
 }
+
+.container .left .people .no-channels {
+    font-family: 'Oxygen', sans-serif;
+    font-size: 15px;
+    text-align: center; 
+    margin: 2em;
+}
 .container .left .people .person {
     position: relative;
     width: 100%;
@@ -359,7 +379,7 @@ body {
     border-radius: 50%;
 }
 .container .left .people .person .name {
-    font-size: 14px;
+    font-size: 18px;
     line-height: 22px;
     color: #1a1a1a;
     font-family: 'Source Sans Pro', sans-serif;
@@ -643,15 +663,15 @@ body {
 
 .wrapper .button:hover,
 .wrapper button:focus {
-  background-color: #4cceea;
-  border-radius: 50%;
+    background-color: #4cceea;
+    border-radius: 50%;
 }
 
 .wrapper .button_id_submit {
-  border-radius: 50%;
-  height: 38px;
-  width: 38px;
-  color: grey;
+    border-radius: 50%;
+    height: 34px;
+    width: 34px;
+    color: grey;
 }
 
 .wrapper .button_id_submit .fa-paper-plane {
@@ -1088,8 +1108,8 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; }
 
 .new-item-menu-label-container{
     position:fixed;
-    bottom:52px;
-    right:110px;
+    bottom:12px;
+    right:75px;
     display:table;
     visibility: hidden;
 }

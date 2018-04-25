@@ -62,12 +62,12 @@ def handler(event, context):
 
         return response
 
-    time.sleep(10)
+    time.sleep(5)
 
     # create a response
     response = {
         "statusCode": 200,
-        "body": json.dumps({'response': 'Channel Created'})
+        "body": json.dumps({'channel': tableId})
     }
 
     return response

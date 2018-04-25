@@ -64,11 +64,38 @@ def publishMessage(channel, email, message):
         headers = {'Content-Type': 'application/json'}
 
         result = urlfetch.fetch(
-                    url = "%s/channels/%s/messages" % (API_ENDPOINT, channel),
+                    url = "%schannels/%s/messages" % (API_ENDPOINT, channel),
                     payload = data,
                     method = urlfetch.POST,
                     headers = headers
                 )
+
+        print(result.status_code)
+        if result.status_code == 200:
+            return (None, json.loads(result.content))
+        else:
+            return (result.status_code, None)
+
+    except urlfetch.Error as error:
+        logging.exception('Caught exception fetching url')
+        return (error, None)
+
+def setChannel(channel):
+    """Create a new channel.
+
+    """
+    try:
+        data = json.dumps({'name': channel})
+        headers = {'Content-Type': 'application/json'}
+
+        urlfetch.set_default_fetch_deadline(30)
+
+        result = urlfetch.fetch(
+            url = "%schannels" % (API_ENDPOINT),
+            payload = data,
+            method = urlfetch.POST,
+            headers = headers
+        )
 
         if result.status_code == 200:
             return (None, json.loads(result.content))
@@ -89,7 +116,6 @@ def chatroom_key(chatroom):
 # [START Chatroom]
 class Chatroom(ndb.Model):
     """Sub model for representing an Chatroom."""
-    name = ndb.StringProperty(indexed=False)
     created = ndb.DateTimeProperty(auto_now_add=True)
 # [END greeting]
 
@@ -186,7 +212,8 @@ class Channels(webapp2.RequestHandler):
 
         template_values = {
             'user': user,
-            'channel': channel,
+            'currentChannel': channel,
+            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
             'messages': messages,
             'url_linktext': url_linktext,
         }
@@ -194,8 +221,24 @@ class Channels(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
 
-    def post(self, channel):
-        pass
+    def post(self):
+        
+        request = json.loads(self.request.body)
+        channel = request['name']
+
+        result = setChannel(channel)
+
+        if result[0] is None:
+
+            channel_key = result[1]['channel']
+            chatroom = Chatroom(parent=chatroom_key(channel_key))
+            chatroom.put()
+
+            self.response.write(json.dumps({'channel': channel_key}))
+        else:
+            self.abort(403)
+            self.response.write('empty')
+
 
 
 class DisplayChannelID(webapp2.RequestHandler):
@@ -238,8 +281,10 @@ class DisplayChannelID(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     # ('/sign', Guestbook),
-    # ('/channels', Channels),
+    ('/channels', Channels),
+    # ('/channel', SetChannels),
     ('/channels/(\S+)', Channels),
     ('/search', Search)
+    # ('/addChannel', addChannel)
 ], debug=True)
 # [END app]

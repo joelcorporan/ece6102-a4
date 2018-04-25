@@ -10,6 +10,7 @@
         {% if user %}
         <div class="left">
             <div class="top">
+                <div class="error-message"> Channel Not found</div>
                 <div id="search">
                     <input id="input" placeholder="Search..."/>
                     <button id="button"><i class="fa fa-search"></i></button>
@@ -30,17 +31,28 @@
                 {% if channels %}
 
                 {% for channel in channels %}
-                
-                <li class="person" data-chat="person1">
-                    <!-- <img src="https://s13.postimg.org/ih41k9tqr/img1.jpg" alt="" /> -->
-                    <span class="name">ECE 2020</span>
-                    <span class="time">2:09 PM</span>
-                    <span class="preview">I was wondering...</span>
-                </li>
+                    {% if channel == currentChannel %}
+
+                        <li class="person active" data-chat="person1">
+                            <!-- <img src="https://s13.postimg.org/ih41k9tqr/img1.jpg" alt="" /> -->
+                            <span class="name">{{ channel }}</span>
+                            <!-- <span class="time">2:09 PM</span>
+                            <span class="preview">I was wondering...</span> -->
+                        </li>
+                    {% else %}
+
+                        <li class="person" data-chat="person1">
+                            <!-- <img src="https://s13.postimg.org/ih41k9tqr/img1.jpg" alt="" /> -->
+                            <span class="name">{{ channel }}</span>
+                            <!-- <span class="time">2:09 PM</span>
+                            <span class="preview">I was wondering...</span> -->
+                        </li>
+
+                    {% endif %}
                 {% endfor %}
 
                 {% else %}
-                    <div style="text-align: center;">
+                    <div class="no-channels">
                         <h2> No Current Channels </h2>
                     </div>
                 {% endif %}
@@ -50,7 +62,7 @@
                     <!-- <div class="nav-collapse collapse pull-right"> -->
     <!-- <a href="{{ url|safe }}" class="btn">{{ url_linktext }}</a> -->
   <!-- </div> -->
-            <div class="top"><span>To: <span class="name"> {{channel}} </span></span></div>
+            <div class="top"><span>To: <span class="name"> {{currentChannel}} </span></span></div>
             <!-- <div class="chat" data-chat="person1">
                 <div class="conversation-start">
                     <span>Today, 6:48 AM</span>
