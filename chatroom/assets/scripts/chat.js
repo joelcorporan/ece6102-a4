@@ -55,34 +55,36 @@ try {
 function getStatus() {
     var $chatRoom = $('.chat.active-chat');
     var $length = $('.chat.active-chat').find('div.bubble').length;
-    var $lastTime = $('.chat.active-chat').find('div.bubble').last();
-    $lastTime = $lastTime.data('time');
+    if ($length > 0) {
+        var $lastTime = $('.chat.active-chat').find('div.bubble').last();
+        $lastTime = $lastTime.data('time');
 
-    const xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
 
-    xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$length}&time=${$lastTime.toString()}`);
-    xhr.setRequestHeader("Content-type", "application/json");
-    
-    xhr.onreadystatechange = () => {
-        if(xhr.readyState === 4){
-            if(xhr.status >= 200 && xhr.status <= 299){
-                var chats = JSON.parse(xhr.response)
-                chats.forEach(function(chat) {
-                    $chatRoom.append(`<div class="bubble you" data-time="${chat.timestamp}"> 
-                                        <h6 class="sender"> ${chat.email} </h6>
-                                        <p> ${ chat.message } </p>
-                                    </div>`);
-                });
+        xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$length}&time=${$lastTime.toString()}`);
+        xhr.setRequestHeader("Content-type", "application/json");
+        
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+                if(xhr.status >= 200 && xhr.status <= 299){
+                    var chats = JSON.parse(xhr.response)
+                    chats.forEach(function(chat) {
+                        $chatRoom.append(`<div class="bubble you" data-time="${chat.timestamp}"> 
+                                            <h6 class="sender"> ${chat.email} </h6>
+                                            <p> ${ chat.message } </p>
+                                        </div>`);
+                    });
 
-                if (chats.length > 0) {
-                    $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+                    if (chats.length > 0) {
+                        $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+                    }
                 }
+                setTimeout(getStatus, 1000);
             }
-            setTimeout(getStatus, 1000);
-        }
-    };
+        };
 
-    xhr.send(null);
+        xhr.send(null);
+    }
 }
 
 

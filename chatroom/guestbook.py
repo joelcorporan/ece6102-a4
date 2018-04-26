@@ -127,16 +127,17 @@ def getChannel(channel):
         return (error, None)
 
 
-def chatroom_key(chatroom):
+def chatroom_key(email):
     """Constructs a Datastore key for a Chatroom entity.
 
     We use chatroom_key as the key.
     """
-    return ndb.Key('channel', chatroom)
+    return ndb.Key('email', email)
 
 # [START Chatroom]
 class Chatroom(ndb.Model):
     """Sub model for representing an Chatroom."""
+    channel = ndb.StringProperty(indexed=False)
     created = ndb.DateTimeProperty(auto_now_add=True)
 # [END greeting]
 
