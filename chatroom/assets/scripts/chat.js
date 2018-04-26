@@ -57,7 +57,7 @@ function getStatus() {
     var $length = $('.chat.active-chat').find('div.bubble').length;
     var $lastTime = $('.chat.active-chat').find('div.bubble').last();
     $lastTime = $lastTime.data('time');
-    
+
     const xhr = new XMLHttpRequest();
 
     xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$length}&time=${$lastTime.toString()}`);
@@ -74,7 +74,9 @@ function getStatus() {
                                     </div>`);
                 });
 
-                $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+                if (chats.length > 0) {
+                    $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+                }
             }
             setTimeout(getStatus, 1000);
         }
@@ -107,11 +109,21 @@ $(document).ready(function() {
                 
                 publishMessage($message_input.val(), $chatRoom.data('chat'), function(error, result) {
                     if(!error) {
-                        $chatRoom.append(`<div class="bubble me">${$message_input.val()}</div>`);
+                        $chatRoom.append(`<div class="bubble me" data-time=${result.timestamp}>${result.message}</div>`);
                         $message_input.val("")
+                        $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
                     }
                 });
             } 
+        });
+
+        $message_input.on('keydown', function(event) {
+            $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+
+            if(event.keyCode == 13)  {
+                console.log("Enter")
+                $msg_button.click();
+            }
         });
 
     } catch(e) {
@@ -149,7 +161,7 @@ function publishMessage(text, channel, callback) {
     xhr.onreadystatechange = () => {
         if(xhr.readyState === 4){
             if(xhr.status >= 200 && xhr.status <= 299){
-                callback(null, xhr.response);
+                callback(null, JSON.parse(xhr.response));
             } else {
                 callback(xhr.status, null);
             }

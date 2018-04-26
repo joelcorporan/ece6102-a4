@@ -70,7 +70,6 @@ def publishMessage(channel, email, message):
                     headers = headers
                 )
 
-        print(result.status_code)
         if result.status_code == 200:
             return (None, json.loads(result.content))
         else:
@@ -113,7 +112,6 @@ def getChannel(channel):
     try:
         urlfetch.set_default_fetch_deadline(30)
 
-        print(channel)
         result = urlfetch.fetch(
             url = "%schannels/%s" % (API_ENDPOINT, channel),
             method = urlfetch.GET
@@ -148,8 +146,6 @@ class MainPage(webapp2.RequestHandler):
 
     def get(self):
         user = getUser(self.request.uri)
-
-        # print()
 
         template_values = {
             'user': user[0],
@@ -288,14 +284,12 @@ class MessageHandler(webapp2.RequestHandler):
 
         if result[0] is None:
             messages = result[1]
-            print(int(query['current']), len(messages), len(messages) > int(query['current']))
+
             if len(messages) > int(query['current']):
-                print("We have more")
                 index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == query['time']), None)
                 
                 if index is not None:
                     newMessages = messages[index + 1:]
-                    print(newMessages)
                     self.response.write(json.dumps(newMessages))
                 else:
                     self.response.write([])
@@ -303,20 +297,16 @@ class MessageHandler(webapp2.RequestHandler):
                 self.response.write([])
 
     def post(self, channel):
-        print('HERE')
-
         user = users.get_current_user()
 
         if user:
             email = user.email()
             body = json.loads(self.request.body)
 
-            print(email, body, channel)
-
             result = publishMessage(channel, email, body['text'])
 
             if result[0] is None:
-                self.response.write(body['text'])
+                self.response.write(json.dumps(result[1]))
 
             else:
                 self.abort(403)
