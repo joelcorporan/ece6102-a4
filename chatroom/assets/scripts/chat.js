@@ -56,17 +56,39 @@ try {
 
 $(document).ready(function() {
 
+    // Sending message
+
+    try {
+
+        var $msg_button = $('.button_id_submit');
+        var $message_input = $('.write input.message');
+        var $chatRoom = $('.chat.active-chat');
+
+        $msg_button.on('click', function() {
+            console.log("clicking");
+
+            if($message_input.val() != "") {
+                
+                $chatRoom.append(`<div class="bubble me">${$message_input.val()}</div>`);
+            } 
+        });
+
+    } catch(e) {
+        console.log(e)
+    }
+    
     try {
         const wrapper = document.querySelector(".input-wrapper"),
-            textInput = document.querySelector("input[type='text']");
+            textInput = document.querySelector("input[type='text'].create");
             
         textInput.addEventListener("keyup", event => {
             wrapper.setAttribute("data-text", event.target.value);
         });
+
+
     } catch(e) {
         console.log(e)
     }
-
     $( "#button-create" ).click(function() {
         if($('.input-wrapper input[type=text]').val() !== "") {
             $( "#button-create" ).addClass( "onclic", 250, createChannel);
@@ -140,3 +162,20 @@ function searchChannel(channel, search) {
 
     xhr.send(body);
 }
+
+
+    // textInput.addEventListener("keyup", event => {
+    //     msg_button.setAttribute("value", event.target.value);
+    // });
+    //     var msg_button = document.getElementById('msg_button');
+    //     var ch = $('span')
+    //     var ch_name = document.getElementsByClassName('span')[0].innerHTML;
+    //     console.log(ch_name)
+    //     msg_button.addEventListener('click', function(){
+    //         var msg = msg_button.getAttribute("value");
+    //         console.log(msg);
+
+
+
+
+
