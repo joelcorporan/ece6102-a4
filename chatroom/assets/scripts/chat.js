@@ -185,7 +185,7 @@ function createChannel() {
                 setTimeout(function() {
                     $("#button-create").removeClass("onclic").addClass("validate");
                         setTimeout(function() {
-                            $("#button-create").removeClass("validate");
+                            // $("#button-create").removeClass("validate");
                             setTimeout(function() {
                                 var response = JSON.parse(xhr.response);
                                 window.location.href = `/channels/${response['channel']}`
