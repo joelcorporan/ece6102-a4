@@ -52,9 +52,46 @@ try {
     console.log(e)
 }
 
+function getStatus() {
+    var $chatRoom = $('.chat.active-chat');
+    var $length = $('.chat.active-chat').find('div.bubble').length;
+    var $lastTime = $('.chat.active-chat').find('div.bubble').last();
+    $lastTime = $lastTime.data('time');
+    
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$length}&time=${$lastTime.toString()}`);
+    xhr.setRequestHeader("Content-type", "application/json");
+    
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState === 4){
+            if(xhr.status >= 200 && xhr.status <= 299){
+                var chats = JSON.parse(xhr.response)
+                chats.forEach(function(chat) {
+                    $chatRoom.append(`<div class="bubble you" data-time="${chat.timestamp}"> 
+                                        <h6 class="sender"> ${chat.email} </h6>
+                                        <p> ${ chat.message } </p>
+                                    </div>`);
+                });
+
+                $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+            }
+            setTimeout(getStatus, 1000);
+        }
+    };
+
+    xhr.send(null);
+}
 
 
 $(document).ready(function() {
+
+    try {
+        getStatus();
+
+    } catch(e) {
+        console.log(e)
+    }
 
     // Sending message
 
@@ -65,11 +102,15 @@ $(document).ready(function() {
         var $chatRoom = $('.chat.active-chat');
 
         $msg_button.on('click', function() {
-            console.log("clicking");
 
             if($message_input.val() != "") {
                 
-                $chatRoom.append(`<div class="bubble me">${$message_input.val()}</div>`);
+                publishMessage($message_input.val(), $chatRoom.data('chat'), function(error, result) {
+                    if(!error) {
+                        $chatRoom.append(`<div class="bubble me">${$message_input.val()}</div>`);
+                        $message_input.val("")
+                    }
+                });
             } 
         });
 
@@ -96,6 +137,27 @@ $(document).ready(function() {
     });
   
 });
+
+
+function publishMessage(text, channel, callback) {
+    const xhr = new XMLHttpRequest();
+    var body = JSON.stringify({text: text})
+
+    xhr.open("POST", `/messages/${channel}`);
+    xhr.setRequestHeader("Content-type", "application/json");
+    
+    xhr.onreadystatechange = () => {
+        if(xhr.readyState === 4){
+            if(xhr.status >= 200 && xhr.status <= 299){
+                callback(null, xhr.response);
+            } else {
+                callback(xhr.status, null);
+            }
+        }
+    };
+
+    xhr.send(body);
+}
 
 function createChannel() {
 

@@ -84,13 +84,13 @@
                 {% for message in messages %}
                     {% if message.email.lower() == user.email() %}
 
-                        <div class="bubble me">
+                        <div class="bubble me" data-time="{{message.timestamp}}">
                             {{ message.message }}
                         </div>
 
                     {% else %}
 
-                        <div class="bubble you">
+                        <div class="bubble you" data-time="{{message.timestamp}}">
                             <h6 class="sender"> {{message.email}} </h6>
                             <p> {{ message.message }} </p>
                         </div>

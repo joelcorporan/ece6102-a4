@@ -273,13 +273,54 @@ class SearchChannel(webapp2.RequestHandler):
             channel_key = channel
             chatroom = Chatroom(parent=chatroom_key(channel_key))
             chatroom.put()
-            
+
             self.response.write(channel)
         else:
             self.abort(403)
             self.response.write('empty')
 
+class MessageHandler(webapp2.RequestHandler):
 
+    def get(self, channel):
+        query = dict(self.request.GET.items())
+
+        result = getMessages(channel)
+
+        if result[0] is None:
+            messages = result[1]
+            print(int(query['current']), len(messages), len(messages) > int(query['current']))
+            if len(messages) > int(query['current']):
+                print("We have more")
+                index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == query['time']), None)
+                
+                if index is not None:
+                    newMessages = messages[index + 1:]
+                    print(newMessages)
+                    self.response.write(json.dumps(newMessages))
+                else:
+                    self.response.write([])
+            else:
+                self.response.write([])
+
+    def post(self, channel):
+        print('HERE')
+
+        user = users.get_current_user()
+
+        if user:
+            email = user.email()
+            body = json.loads(self.request.body)
+
+            print(email, body, channel)
+
+            result = publishMessage(channel, email, body['text'])
+
+            if result[0] is None:
+                self.response.write(body['text'])
+
+            else:
+                self.abort(403)
+                self.response.write('empty')
 
 
 # [END guestbook]
@@ -292,6 +333,7 @@ class SearchChannel(webapp2.RequestHandler):
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/messages/(\S+)', MessageHandler),
     ('/channels', Channels),
     ('/search', SearchChannel),
     ('/channels/(\S+)', Channels),
