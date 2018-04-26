@@ -183,13 +183,14 @@ function createChannel() {
         if(xhr.readyState === 4){
             if(xhr.status >= 200 && xhr.status <= 299){
                 setTimeout(function() {
-                    $("#button-create").removeClass("onclic").addClass("validate");
+                    // $("#button-create").removeClass("onclic").addClass("validate");
                         setTimeout(function() {
                             // $("#button-create").removeClass("validate");
                             setTimeout(function() {
+                                $("#button-create").removeClass("onclic").addClass("validate");
                                 var response = JSON.parse(xhr.response);
                                 window.location.href = `/channels/${response['channel']}`
-                            }, 7000 );
+                            }, 15000 );
                         }, 1250 );
                 }, 1000 );
 
