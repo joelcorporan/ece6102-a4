@@ -325,7 +325,7 @@ app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/messages/(\S+)', MessageHandler),
     ('/channels', Channels),
-    ('/search', SearchChannel),
+    ('/searchChannel', SearchChannel),
     ('/channels/(\S+)', Channels),
     ('/search', Search)
 ], debug=True)

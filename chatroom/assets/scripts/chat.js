@@ -213,7 +213,7 @@ function searchChannel(channel, search) {
     const xhr = new XMLHttpRequest();
     var body = JSON.stringify({name: $('.input-wrapper input[type=text]').val()})
 
-    xhr.open("GET", `/search?channel=${channel}`);
+    xhr.open("GET", `/searchChannel?channel=${channel}`);
     xhr.setRequestHeader("Content-type", "application/json");
     
     xhr.onreadystatechange = () => {
