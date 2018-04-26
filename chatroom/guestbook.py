@@ -231,7 +231,7 @@ class Channels(webapp2.RequestHandler):
 
                 key = user.email()
                 chatroom = Chatroom(parent=chatroom_key(key))
-                chatroom.channel = channel
+                chatroom.channel = result[1]['channel']
                 chatroom.put()
 
                 self.response.write(json.dumps({'channel': result[1]['channel']}))
