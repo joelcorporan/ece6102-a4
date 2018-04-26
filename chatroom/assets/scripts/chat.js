@@ -189,7 +189,7 @@ function createChannel() {
                             setTimeout(function() {
                                 var response = JSON.parse(xhr.response);
                                 window.location.href = `/channels/${response['channel']}`
-                            }, 1000 );
+                            }, 7000 );
                         }, 1250 );
                 }, 1000 );
 
