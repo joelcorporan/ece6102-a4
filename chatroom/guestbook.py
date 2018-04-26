@@ -152,10 +152,12 @@ class MainPage(webapp2.RequestHandler):
 
         template_values = {
             'user': user[0],
-            'channels': getCurrentChannels(user[0]),
             'url': user[1],
             'url_linktext': user[2],
         }
+
+        if user[0]:
+            template_values['channels'] = getCurrentChannels(user[0])
 
         template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
@@ -232,7 +234,7 @@ class Channels(webapp2.RequestHandler):
                 chatroom.channel = channel
                 chatroom.put()
 
-                self.response.write(json.dumps({'channel': channel}))
+                self.response.write(json.dumps({'channel': result[1]['channel']}))
             else:
                 self.abort(403)
                 self.response.write('empty')
