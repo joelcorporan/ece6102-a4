@@ -229,6 +229,8 @@ function searchChannel(channel, search) {
 
                 $channels.append($template);
 
+                $('.no-channels').remove();
+
             } else {
                 console.log(xhr)
             }

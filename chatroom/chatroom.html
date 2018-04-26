@@ -31,17 +31,17 @@
                 {% if channels %}
 
                 {% for channel in channels %}
-                    {% if channel == currentChannel %}
+                    {% if channel.channel == currentChannel %}
 
-                        <li class="person active" data-chat="{{ channel }}">
-                            <span class="name">{{ channel }}</span>
+                        <li class="person active" data-chat="{{ channel.channel }}">
+                            <span class="name">{{ channel.channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
                     {% else %}
 
-                        <li class="person" data-chat="{{ channel }}">
-                            <span class="name">{{ channel }}</span>
+                        <li class="person" data-chat="{{ channel.channel }}">
+                            <span class="name">{{ channel.channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
@@ -258,8 +258,6 @@
 <script id='channelItem' type='text/template'>
     <li class="person" data-chat="{{ channel }}">
         <span class="name"></span>
-        <span class="time">2:09 PM</span>
-        <span class="preview">I was wondering...</span>
     </li>
 </script>
 

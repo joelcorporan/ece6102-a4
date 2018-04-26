@@ -32,11 +32,13 @@ def getUser(uri):
 
     return (user, url, url_linktext)
 
-def getCurrentChannels(entities):
+def getCurrentChannels(user):
     """Return the current Channels.
 
     """
-    return list(set(map(lambda key: key.parent().id().decode('utf_8'), entities)))
+    # return list(set(map(lambda key: key.parent().id().decode('utf_8'), entities)))
+    channels_query = Chatroom.query(ancestor=chatroom_key(user.email()))
+    return channels_query.fetch()
 
 def getMessages(channel):
     """Return the messages on a channel.
@@ -150,7 +152,7 @@ class MainPage(webapp2.RequestHandler):
 
         template_values = {
             'user': user[0],
-            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
+            'channels': getCurrentChannels(user[0]),
             'url': user[1],
             'url_linktext': user[2],
         }
@@ -169,7 +171,6 @@ class Search(webapp2.RequestHandler):
 
         template_values = {
             'user': user[0],
-            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
             'url': user[1],
             'url_linktext': user[2],
         }
@@ -178,31 +179,6 @@ class Search(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 # [END Search]
-
-
-# [START guestbook]
-class Guestbook(webapp2.RequestHandler):
-
-    def post(self):
-        # We set the same parent key on the 'Greeting' to ensure each
-        # Greeting is in the same entity group. Queries across the
-        # single entity group will be consistent. However, the write
-        # rate to a single entity group should be limited to
-        # ~1/second.
-        guestbook_name = self.request.get('guestbook_name',
-                                          DEFAULT_GUESTBOOK_NAME)
-        greeting = Greeting(parent=guestbook_key(guestbook_name))
-
-        if users.get_current_user():
-            greeting.author = Author(
-                    identity=users.get_current_user().user_id(),
-                    email=users.get_current_user().email())
-
-        greeting.content = self.request.get('content')
-        greeting.put()
-
-        query_params = {'guestbook_name': guestbook_name}
-        self.redirect('/?' + urllib.urlencode(query_params))
 
 
 # channel API
@@ -227,12 +203,11 @@ class Channels(webapp2.RequestHandler):
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
-    
 
         template_values = {
             'user': user,
             'currentChannel': channel,
-            'channels': getCurrentChannels(Chatroom.query().fetch(keys_only=True)),
+            'channels': getCurrentChannels(user),
             'messages': messages,
             'url_linktext': url_linktext,
         }
@@ -247,13 +222,20 @@ class Channels(webapp2.RequestHandler):
 
         result = setChannel(channel)
 
-        if result[0] is None:
+        user = users.get_current_user()
 
-            channel_key = result[1]['channel']
-            chatroom = Chatroom(parent=chatroom_key(channel_key))
-            chatroom.put()
+        if user:
+            if result[0] is None:
 
-            self.response.write(json.dumps({'channel': channel_key}))
+                key = user.email()
+                chatroom = Chatroom(parent=chatroom_key(key))
+                chatroom.channel = channel
+                chatroom.put()
+
+                self.response.write(json.dumps({'channel': channel}))
+            else:
+                self.abort(403)
+                self.response.write('empty')
         else:
             self.abort(403)
             self.response.write('empty')
@@ -265,13 +247,21 @@ class SearchChannel(webapp2.RequestHandler):
         channel = self.request.get('channel')
         result = getChannel(channel)
 
-        if result[0] is None and channel not in getCurrentChannels(Chatroom.query().fetch(keys_only=True)):
 
-            channel_key = channel
-            chatroom = Chatroom(parent=chatroom_key(channel_key))
-            chatroom.put()
+        user = users.get_current_user()
 
-            self.response.write(channel)
+        if user:
+            if result[0] is None and channel not in getCurrentChannels(user):
+
+                key = user.email()
+                chatroom = Chatroom(parent=chatroom_key(key))
+                chatroom.channel = channel
+                chatroom.put()
+
+                self.response.write(channel)
+            else:
+                self.abort(403)
+                self.response.write('empty')
         else:
             self.abort(403)
             self.response.write('empty')
