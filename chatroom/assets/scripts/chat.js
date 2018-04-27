@@ -152,7 +152,7 @@ $(function() {
                         }
                     }
 
-                    setTimeout(getStatus, 1000);
+                    setTimeout(getStatus, 250);
                 }
             };
             xhr.send(null);
