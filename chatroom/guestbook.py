@@ -38,7 +38,13 @@ def getCurrentChannels(user):
     """
     # return list(set(map(lambda key: key.parent().id().decode('utf_8'), entities)))
     channels_query = Chatroom.query(ancestor=chatroom_key(user.email()))
-    return channels_query.fetch()
+
+    channels = channels_query.fetch()
+
+    newChannels = []
+    for channel in channels:
+        newChannels.append(channel.channel)
+    return newChannels
 
 def getMessages(channel):
     """Return the messages on a channel.
@@ -144,7 +150,7 @@ class Chatroom(ndb.Model):
 # [END greeting]
 
 
-# [START main_page]
+# [START MainPage]
 class MainPage(webapp2.RequestHandler):
 
     def get(self):
@@ -161,11 +167,9 @@ class MainPage(webapp2.RequestHandler):
 
         template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
-
-# [END main_page]
+# [END MainPage]
 
 # [START Search]
-
 class Search(webapp2.RequestHandler):
 
     def get(self):
@@ -198,6 +202,7 @@ class Channels(webapp2.RequestHandler):
             template_values = {
                 'user': user[0],
                 'url': user[1],
+                'email': user[0].email(),
                 'currentChannel': channel,
                 'messages': messages,
                 'url_linktext': user[2],
@@ -279,7 +284,7 @@ class MessageHandler(webapp2.RequestHandler):
                     email = user.email()
                     time = query['time']
                     print(email, time)
-                    index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == time and str(d["email"]) != str(email)), None)
+                    index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == time), None)
 
                     if index is not None:
                         newMessages = messages[index + 1:]

@@ -34,6 +34,7 @@ $(function() {
         var $msg_button = $('.button_id_submit');
         var $message_input = $('.write input.message');
         var $chatRoom = $('.chat.active-chat');
+        var $email = $chatRoom.data('email');
 
         $msg_button.on('click', function() {
             if($message_input.val() != "") {
@@ -136,18 +137,21 @@ $(function() {
                         var chats = JSON.parse(xhr.response);
 
                         chats.forEach(function(chat) {
-                            $chatRoom.append(`
-                                <div class="bubble you" data-time="${chat.timestamp}"> 
-                                    <h6 class="sender"> ${chat.email} </h6>
-                                    <p> ${ chat.message } </p>
-                                </div>`
-                            );
+                            if ($email != chat.email) {
+                                $chatRoom.append(`
+                                    <div class="bubble you" data-time="${chat.timestamp}"> 
+                                        <h6 class="sender"> ${chat.email} </h6>
+                                        <p> ${ chat.message } </p>
+                                    </div>`
+                                );
+                            }
                         });
 
                         if (chats.length > 0) {
                             $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
                         }
                     }
+
                     setTimeout(getStatus, 1000);
                 }
             };

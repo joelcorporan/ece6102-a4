@@ -33,15 +33,15 @@
                 {% for channel in channels %}
                     {% if channel.channel == currentChannel %}
 
-                        <li class="channel active" data-chat="{{ channel.channel }}">
-                            <span class="name">{{ channel.channel }}</span>
+                        <li class="channel active" data-chat="{{ channel }}">
+                            <span class="name">{{ channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
                     {% else %}
 
-                        <li class="channel" data-chat="{{ channel.channel }}">
-                            <span class="name">{{ channel.channel }}</span>
+                        <li class="channel" data-chat="{{ channel }}">
+                            <span class="name">{{ channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
@@ -76,13 +76,13 @@
                 </div>
             </div> -->
 
-                <div class="chat active-chat" data-chat="{{ currentChannel }}">
+                <div class="chat active-chat" data-chat="{{ currentChannel }}" data-email="{{ email }}">
                 <!-- <div class="conversation-start">
                     <span>Today, 5:38 PM</span>
                 </div> -->
 
                 {% for message in messages %}
-                    {% if message.email.lower() == user.email() %}
+                    {% if message.email.lower() == user.email().lower() %}
 
                         <div class="bubble me" data-time="{{message.timestamp}}">
                             {{ message.message }}
