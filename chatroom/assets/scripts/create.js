@@ -1,15 +1,13 @@
 $(function() {
 
-    const $wrapper = document.querySelector(".input-wrapper"),
-          $textInput = document.querySelector("input[type='text'].create"),
+    const $wrapper = $(".input-wrapper"),
+          $textInput = $("input[type='text'].create"),
           $button = $("#button-create");
     
     try {
-        const wrapper = document.querySelector(".input-wrapper"),
-            textInput = document.querySelector("input[type='text'].create");
             
-        $textInput.addEventListener("keyup", event => {
-            $wrapper.setAttribute("data-text", event.target.value);
+        $textInput.on("keyup", event => {
+            $wrapper.attr("data-text", event.target.value);
         });
 
 
