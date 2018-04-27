@@ -274,9 +274,11 @@ body {
 }
 .container .left {
     float: left;
-    width: 35%;
+    width: 30%;
     height: 100%;
-    border: 1px solid #e6e6e6;
+    border-right: 1px solid #e6e6e6;
+    border-top: 1px solid #e6e6e6;
+    border-left: 1px solid #e6e6e6;
     background-color: #fff;
     overflow-y: scroll;
     overflow-x: hidden;
@@ -339,27 +341,28 @@ body {
     background-position: top 12px left 14px;
     border-radius: 50%;
 }
-.container .left .people {
+.container .left .channels {
     /*margin-left: -1px;*/
     border-right: 1px solid #e6e6e6;
     /*border-left: 1px solid #e6e6e6;*/
     width: calc(100% + 2px);
+    text-align: center;
 }
 
-.container .left .people .no-channels {
+.container .left .channels .no-channels {
     font-family: 'Oxygen', sans-serif;
     font-size: 15px;
     text-align: center; 
     margin: 2em;
 }
-.container .left .people .person {
+.container .left .channels .channel {
     position: relative;
     width: 100%;
     padding: 12px 10% 16px;
     cursor: pointer;
     background-color: #fff;
 }
-.container .left .people .person:after {
+.container .left .channels .channel:after {
     position: absolute;
     bottom: 0;
     left: 50%;
@@ -371,21 +374,21 @@ body {
     -webkit-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
 }
-.container .left .people .person img {
+.container .left .channels .channel img {
     float: left;
     width: 40px;
     height: 40px;
     margin-right: 12px;
     border-radius: 50%;
 }
-.container .left .people .person .name {
+.container .left .channels .channel .name {
     font-size: 18px;
     line-height: 22px;
     color: #1a1a1a;
     font-family: 'Source Sans Pro', sans-serif;
     font-weight: 600;
 }
-.container .left .people .person .time {
+.container .left .channels .channel .time {
     font-size: 14px;
     position: absolute;
     top: 16px;
@@ -394,7 +397,7 @@ body {
     color: #999;
     background-color: #fff;
 }
-.container .left .people .person .preview {
+.container .left .channels .channel .preview {
     font-size: 14px;
     display: block;
     overflow: hidden !important;
@@ -403,7 +406,7 @@ body {
     text-overflow: ellipsis;
     color: #999;
 }
-.container .left .people .person.active, .container .left .people .person:hover {
+.container .left .channels .channel.active, .container .left .channels .channel:hover {
     margin-top: -1px;
     margin-left: -1px;
     padding-top: 13px;
@@ -412,17 +415,17 @@ body {
     width: calc(100% + 2px);
     padding-left: calc(10% + 1px);
 }
-.container .left .people .person.active span, .container .left .people .person:hover span {
+.container .left .channels .channel.active span, .container .left .channels .channel:hover span {
     color: #fff;
     background: transparent;
 }
-.container .left .people .person.active:after, .container .left .people .person:hover:after {
+.container .left .channels .channel.active:after, .container .left .channels .channel:hover:after {
     display: none;
 }
 .container .right {
     position: relative;
     float: left;
-    width: 65%;
+    width: 70%;
     height: 100%;
 }
 .container .right .top {
@@ -1038,7 +1041,7 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; }
   /*width: 500px;*/
 }
 #search:hover, #search:focus {
-  background: #a3a3a3;
+  background: #ccc;
 }
 #search button,
 #search input {
@@ -1050,7 +1053,17 @@ input[type=search]::-webkit-search-cancel-button { -webkit-appearance: none; }
   color: #868585;
   font: inherit;
   outline: 0;
+  font-size: 16px;
 }
+
+#search:hover button {
+    color: #fff;
+}
+
+#search:hover input {
+    color: #fff;
+}
+
 #search button {
   cursor: pointer;
   padding: 0 0.25em;

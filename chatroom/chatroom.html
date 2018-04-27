@@ -26,21 +26,21 @@
                 <!-- <input type="text" /> -->
                 <!-- <a href="javascript:;" class="search"></a> -->
             </div>
-            <ul class="people">
+            <ul class="channels">
 
                 {% if channels %}
 
                 {% for channel in channels %}
                     {% if channel.channel == currentChannel %}
 
-                        <li class="person active" data-chat="{{ channel.channel }}">
+                        <li class="channel active" data-chat="{{ channel.channel }}">
                             <span class="name">{{ channel.channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
                         </li>
                     {% else %}
 
-                        <li class="person" data-chat="{{ channel.channel }}">
+                        <li class="channel" data-chat="{{ channel.channel }}">
                             <span class="name">{{ channel.channel }}</span>
                             <!-- <span class="time">2:09 PM</span>
                             <span class="preview">I was wondering...</span> -->
@@ -256,7 +256,7 @@
 </div>
 
 <script id='channelItem' type='text/template'>
-    <li class="person" data-chat="{{ channel }}">
+    <li class="channel" data-chat="{{ channel }}">
         <span class="name"></span>
     </li>
 </script>

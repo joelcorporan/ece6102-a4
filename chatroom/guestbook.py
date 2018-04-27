@@ -192,30 +192,24 @@ class Channels(webapp2.RequestHandler):
 
         if result[0] is None:
             messages = result[1]
+
+            user = getUser(self.request.uri)
+
+            template_values = {
+                'user': user[0],
+                'url': user[1],
+                'currentChannel': channel,
+                'messages': messages,
+                'url_linktext': user[2],
+            }
+
+            if user[0]:
+                template_values['channels'] = getCurrentChannels(user[0])
+
+            template = JINJA_ENVIRONMENT.get_template('chatroom.html')
+            self.response.write(template.render(template_values))
         else:
-            messages = None
-
-        user = users.get_current_user()
-
-        if user:
-            # need to query the channel data for that user
-
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
-
-        template_values = {
-            'user': user,
-            'currentChannel': channel,
-            'channels': getCurrentChannels(user),
-            'messages': messages,
-            'url_linktext': url_linktext,
-        }
-
-        template = JINJA_ENVIRONMENT.get_template('chatroom.html')
-        self.response.write(template.render(template_values))
+            self.redirect('/')
 
     def post(self):
         
@@ -245,10 +239,8 @@ class Channels(webapp2.RequestHandler):
 class SearchChannel(webapp2.RequestHandler):
 
     def get(self):
-
         channel = self.request.get('channel')
         result = getChannel(channel)
-
 
         user = users.get_current_user()
 
@@ -275,19 +267,29 @@ class MessageHandler(webapp2.RequestHandler):
 
         result = getMessages(channel)
 
-        if result[0] is None:
-            messages = result[1]
+        user = users.get_current_user()
 
-            if len(messages) > int(query['current']):
-                index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == query['time']), None)
-                
-                if index is not None:
-                    newMessages = messages[index + 1:]
-                    self.response.write(json.dumps(newMessages))
+        if user:
+            if result[0] is None:
+                messages = result[1]
+
+                print(len(messages), int(query['current']), len(messages) != int(query['current']), query['time'])
+
+                if len(messages) > int(query['current']):
+                    email = user.email()
+                    time = query['time']
+                    print(email, time)
+                    index = next((index for (index, d) in enumerate(messages) if d["timestamp"] == time and str(d["email"]) != str(email)), None)
+
+                    if index is not None:
+                        newMessages = messages[index + 1:]
+                        self.response.write(json.dumps(newMessages))
+                    else:
+                        self.response.write([])
                 else:
                     self.response.write([])
-            else:
-                self.response.write([])
+        else:
+            self.response.write([])
 
     def post(self, channel):
         user = users.get_current_user()
@@ -307,10 +309,6 @@ class MessageHandler(webapp2.RequestHandler):
 
 
 # [END guestbook]
-
-
-
-
 
 
 # [START app]
