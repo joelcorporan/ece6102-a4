@@ -42,23 +42,23 @@ $(function() {
             if($message_input.val() != "") {
                 publishMessage($message_input.val(), $chatRoom.data('chat'), function(error, result) {
                     if(!error) {
-                        $chatRoom.append(`<div class="bubble me" data-time=${result.timestamp}>${result.message}</div>`);
-                        var time = new Date(new Date(result.timestamp).toString());
-                        var hour = time.getHours();
-                        var minutes = time.getMinutes();
+                        // $chatRoom.append(`<div class="bubble me" data-time=${result.timestamp}>${result.message}</div>`);
+                        // var time = new Date(new Date(result.timestamp).toString());
+                        // var hour = time.getHours();
+                        // var minutes = time.getMinutes();
 
-                        var currentTime = `${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`;
+                        // var currentTime = `${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`;
 
-                        if ($currentChannel.find('span.preview').length > 0) {
-                            $currentChannel.find('span.preview').text(result.message);
-                            $currentChannel.find('span.time').text(currentTime);
-                        } else {
-                            $currentChannel.append(`<span class="time">${currentTime}</span>`);
-                            $currentChannel.append(`<span class="preview">${result.message}</span>`);
-                        }
+                        // if ($currentChannel.find('span.preview').length > 0) {
+                        //     $currentChannel.find('span.preview').text(result.message);
+                        //     $currentChannel.find('span.time').text(currentTime);
+                        // } else {
+                        //     $currentChannel.append(`<span class="time">${currentTime}</span>`);
+                        //     $currentChannel.append(`<span class="preview">${result.message}</span>`);
+                        // }
 
-                        $currentChannel.find('span.preview').text(result.message);
-                        $currentChannel.find('span.time').text(`${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`)
+                        // $currentChannel.find('span.preview').text(result.message);
+                        // $currentChannel.find('span.time').text(`${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`)
                         $message_input.val("")
                         $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
                     }
@@ -156,7 +156,7 @@ $(function() {
                     else if(xhr.status >= 200 && xhr.status <= 299){
                         $messages = JSON.parse(xhr.response);
 
-                        addNewMessages($chats.slice($chats.length), $messages, function() {
+                        addNewMessages($chats.length, $messages, function() {
                             setTimeout(getStatus, 250);
                         });
                     }
@@ -166,12 +166,14 @@ $(function() {
         }
     }
 
-    function addNewMessages(chats, newChats, callback) {
+    function addNewMessages(slideLength, newChats, callback) {
+
+        var $chats = $chatRoom.find('div.bubble');
 
         newChats.forEach(function(chat, index1) {
-            if ($email != chat.email) {
-                binaryInsert(chat, chats);
-            }
+            // if ($email != chat.email) {
+            binaryInsert(chat, $chats.slice(slideLength));
+            // }
         });
 
         if (newChats.length > 0) $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
@@ -191,8 +193,8 @@ $(function() {
         
         if(length == 0) {
             $chatRoom.append(`
-                <div class="bubble you" data-time="${chat.timestamp}"> 
-                    <h6 class="sender"> ${chat.email} </h6>
+                <div class="bubble ${chat.email == $email ? "me" : "you"}" data-time="${chat.timestamp}"> 
+                    ${chat.email == $email ? "" : `<h6 class="sender"> ${chat.email} </h6>`}
                     <p> ${ chat.message } </p>
                 </div>`
             );
@@ -243,7 +245,7 @@ $(function() {
                 else if(xhr.status >= 200 && xhr.status <= 299) {
                     var newChats = JSON.parse(xhr.response);
 
-                    addNewMessages($chats.slice($chats.length - (parseInt(remaining) - $chats.length) - 1), newChats, function() {
+                    addNewMessages(($chats.length - (parseInt(remaining) - $chats.length) - 1), newChats, function() {
                         setTimeout(getStatus, 250);
                     });
                 }
