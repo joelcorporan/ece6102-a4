@@ -283,12 +283,12 @@ class Messages(webapp2.RequestHandler):
                             self.response.write(json.dumps(newMessages))
 
                         else:
-                            self.response.headers.add("remaining", len(messages))
+                            self.response.headers.add("remaining", str(len(messages)))
                             self.response.set_status(409)
                             self.response.write([])
 
                     else:
-                        self.response.headers.add("remaining", len(messages))
+                        self.response.headers.add("remaining", str(len(messages)))
                         self.response.set_status(409)
                         self.response.write([])
                 else:
