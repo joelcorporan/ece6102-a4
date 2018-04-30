@@ -7,7 +7,6 @@ import json
 import logging
 import pytz
 
-from pytz import timezone
 from datetime import datetime, timedelta
 from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
@@ -200,31 +199,35 @@ class Channel(webapp2.RequestHandler):
     def get(self, channel):
         result = getMessages(channel)
 
-        if result[0] is None:
-            messages = result[1]
+        user = getUser(self.request.uri)
 
-            user = getUser(self.request.uri)
+        if user[0]:
 
-            template_values = {
-                'user': user[0],
-                'url': user[1],
-                'email': user[0].email(),
-                'currentChannel': channel,
-                'messages': messages,
-                'url_linktext': user[2],
-            }
+            if result[0] is None:
+                messages = result[1]
 
-            if user[0]:
-                template_values['channels'] = getCurrentChannels(user[0])
+                template_values = {
+                    'user': user[0],
+                    'url': user[1],
+                    'email': user[0].email(),
+                    'currentChannel': channel,
+                    'messages': messages,
+                    'url_linktext': user[2],
+                }
 
-            template = JINJA_ENVIRONMENT.get_template('chatroom.html')
-            self.response.write(template.render(template_values))
+                if user[0]:
+                    template_values['channels'] = getCurrentChannels(user[0])
 
+                template = JINJA_ENVIRONMENT.get_template('chatroom.html')
+                self.response.write(template.render(template_values))
+
+            else:
+                result = getChannel(channel)
+
+                if result[0] is not None:
+                    self.redirect('/channels')
         else:
-            result = getChannel(channel)
-
-            if result[0] is not None:
-                self.redirect('/channels')
+            self.redirect('/')
 # [END Channel]
 
 # [START Search]
@@ -275,8 +278,19 @@ class Messages(webapp2.RequestHandler):
 
                     if index is not None:
                         newMessages = messages[index + 1:]
-                        self.response.write(json.dumps(newMessages))
+
+                        if len(messages) == (int(query['current']) + len(newMessages)):
+                            newMessages = messages[index + 1:]
+                            self.response.write(json.dumps(newMessages))
+
+                        else:
+                            self.response.headers.add("remaining", len(messages))
+                            self.response.set_status(409)
+                            self.response.write([])
+
                     else:
+                        self.response.headers.add("remaining", len(messages))
+                        self.response.set_status(409)
                         self.response.write([])
                 else:
                     self.response.write([])
@@ -345,18 +359,18 @@ class SetChannel(webapp2.RequestHandler):
 def format_datetime(value, format='medium'):
     date = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
     date = date.replace(tzinfo=pytz.UTC)
-    date = date.astimezone(timezone('US/Eastern'))
+    date = date.astimezone(pytz.timezone('US/Eastern'))
 
     return date.strftime("%-I:%M %p")
 
 def format_gap(time1, time2):
     date1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%S.%f")
     date1 = date1.replace(tzinfo=pytz.UTC)
-    date1 = date1.astimezone(timezone('US/Eastern'))
+    date1 = date1.astimezone(pytz.timezone('US/Eastern'))
 
     date2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%S.%f")
     date2 = date2.replace(tzinfo=pytz.UTC)
-    date2 = date2.astimezone(timezone('US/Eastern'))
+    date2 = date2.astimezone(pytz.timezone('US/Eastern'))
 
     diff = abs(date2 - date1)
 

@@ -2,7 +2,8 @@ $(function() {
 
     var $window = $(window),
         $body = $('body'),
-        $channelItem = $('#channelItem');
+        $channelItem = $('#channelItem'),
+        $delta = 2;
 
     $body.on('click', '.channels .channel', function() {
         window.location.href = window.location.origin + `/channels/${$(this).data('chat')}`
@@ -48,7 +49,7 @@ $(function() {
 
                         var currentTime = `${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`;
 
-                        if ($currentChannel.find('span.preview').length > 1) {
+                        if ($currentChannel.find('span.preview').length > 0) {
                             $currentChannel.find('span.preview').text(result.message);
                             $currentChannel.find('span.time').text(currentTime);
                         } else {
@@ -137,43 +138,128 @@ $(function() {
 
     function getStatus() {
 
-        var $length = $chatRoom.find('div.bubble').length;
+        var $chats = $chatRoom.find('div.bubble');
         
-        if ($length > 0) {
+        if ($chats.length > 0) {
             var $lastTime = $chatRoom.find('div.bubble').last();
                 $lastTime = $lastTime.data('time');
 
             const xhr = new XMLHttpRequest();
 
-            xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$length}&time=${$lastTime.toString()}`);
+            xhr.open("GET", `/channels/${$chatRoom.data('chat')}/messages?current=${$chats.length}&time=${$lastTime.toString()}`);
             xhr.setRequestHeader("Content-type", "application/json");
             
             xhr.onreadystatechange = () => {
                 if(xhr.readyState === 4){
-                    if(xhr.status >= 200 && xhr.status <= 299){
-                        var chats = JSON.parse(xhr.response);
+                    if (xhr.status == 409) solveConflict(xhr.getResponseHeader("remaining"));
 
-                        chats.forEach(function(chat) {
-                            if ($email != chat.email) {
-                                $chatRoom.append(`
-                                    <div class="bubble you" data-time="${chat.timestamp}"> 
-                                        <h6 class="sender"> ${chat.email} </h6>
-                                        <p> ${ chat.message } </p>
-                                    </div>`
-                                );
-                            }
+                    else if(xhr.status >= 200 && xhr.status <= 299){
+                        $messages = JSON.parse(xhr.response);
+
+                        addNewMessages($chats.slice($chats.length), $messages, function() {
+                            setTimeout(getStatus, 250);
                         });
-
-                        if (chats.length > 0) {
-                            $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
-                        }
                     }
-                    
-                    // setTimeout(getStatus, 250);
                 }
             };
             xhr.send(null);
         }
     }
 
+    function addNewMessages(chats, newChats, callback) {
+
+        newChats.forEach(function(chat, index1) {
+            if ($email != chat.email) {
+                binaryInsert(chat, chats);
+            }
+        });
+
+        if (newChats.length > 0) $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
+
+        callback();
+
+    }
+
+    function binaryInsert(chat, array, startVal, endVal){
+
+        console.log(chat, array, startVal, endVal)
+
+        var length = array.length;
+        var start = typeof(startVal) != 'undefined' ? startVal : 0;
+        var end = typeof(endVal) != 'undefined' ? endVal : length - 1;//!! endVal could be 0 don't use || syntax
+        var m = start + Math.floor((end - start)/2);
+        
+        if(length == 0) {
+            $chatRoom.append(`
+                <div class="bubble you" data-time="${chat.timestamp}"> 
+                    <h6 class="sender"> ${chat.email} </h6>
+                    <p> ${ chat.message } </p>
+                </div>`
+            );
+            return;
+        }
+
+        if(new Date(chat.timestamp) > new Date(array[end].data('time'))) {
+            array.slice(end + 1, 0).wrapInner(value);
+            return;
+        }
+
+        if(new Date(chat.timestamp) < new Date(array[start].data('time'))) {
+            array.slice(start, 0,).wrapInner(value);
+            return;
+        }
+
+        if(start >= end) {
+            return;
+        }
+
+        if(new Date(chat.timestamp) < new Date(array[m].data('time'))) {
+            binaryInsert(value, array, start, m - 1);
+            return;
+        }
+
+        if(new Date(chat.timestamp) > new Date(array[m].data('time'))){
+            binaryInsert(value, array, m + 1, end);
+            return;
+        }
+    }
+
+    function solveConflict(remaining) {
+
+        var $chats = $chatRoom.find('div.bubble');
+
+        var timeLookUp = $chats[$chats.length - (parseInt(remaining) - $chats.length) - 1];
+        var lastTime = timeLookUp.data('time');
+
+        const xhr = new XMLHttpRequest();
+
+        xhr.open("GET", `/messages/${$chatRoom.data('chat')}?current=${$chat.length}&time=${$lastTime.toString()}`);
+        xhr.setRequestHeader("Content-type", "application/json");
+
+        xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4) {
+                if (xhr.status == 409) solveConflict(xhr.getResponseHeader("remaining"));
+
+                else if(xhr.status >= 200 && xhr.status <= 299) {
+                    var newChats = JSON.parse(xhr.response);
+
+                    addNewMessages($chats.slice($chats.length - (parseInt(remaining) - $chats.length) - 1), newChats, function() {
+                        setTimeout(getStatus, 250);
+                    });
+                }
+            }
+        };
+        xhr.send(null);
+    }
 });
+
+$.fn.insertAt = function(elements, index){
+    var children = this.children();
+    if(index >= children.size()){
+        this.append(elements);
+        return this;
+    }
+    var before = children.eq(index);
+    $(elements).insertBefore(before);
+    return this;
+};
