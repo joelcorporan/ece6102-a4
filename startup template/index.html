@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Dependable Key-Value Chat</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no">
+
+    <!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+    <!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
+    <script src="assets/scripts/jquery.min.js"></script>
+    <script src="assets/scripts/jquery-ui.min.js"></script>
+    <script src="assets/scripts/chat.js"></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header id="header">
+        <h1><a href="/" class="logo"><strong>Dependable Key-Value Chat</strong></a></h1>
+        <nav class="main">
+            <ul>
+                <li class="log">
+                    Welcome, John Doe!
+                </li>
+                <li><a href="{{ url|safe }}" class="user button">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="wrapper">
+        <div class="container">
+            <div class="left">
+                <div class="top">
+                    <div class="error-message"> Channel Not found</div>
+                    <div id="search">
+                        <input id="input-search" placeholder="Search..."/>
+                        <button id="button-search"><i class="fa fa-search"></i></button>
+                        <div class="spinner"><i class="fa fa-spinner"></i></div>
+                    </div>
+                </div>
+                <ul class="channels">
+                    <li class="channel active" data-chat="person1">
+                        <span class="name">ECE 2020</span>
+                        <span class="time">2:09 PM</span>
+                        <span class="preview">I was wondering...</span>
+                    </li>
+                    <li class="channel" data-chat="person2">
+                        <span class="name"> Yoga Class</span>
+                        <span class="time">1:44 PM</span>
+                        <span class="preview">I've forgotten how it felt before</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="right">
+                <div class="top"><span>To: <span class="name">ECE 2020</span></span></div>
+                <!-- <div class="chats"> -->
+                <div class="chat" data-chat="person1">
+                    <div class="conversation-start">
+                        <span>Today, 6:48 AM</span>
+                    </div>
+                    <div class="bubble you">
+                        Hello,
+                    </div>
+                    <div class="bubble you">
+                        it's me.
+                    </div>
+                    <div class="bubble you">
+                        I was wondering...
+                    </div>
+                </div>
+                <div class="chat" data-chat="person2">
+                    <div class="conversation-start">
+                        <span>Today, 5:38 PM</span>
+                    </div>
+                    <div class="bubble you">
+                        Hello, can you hear me?
+                    </div>
+                    <div class="bubble you">
+                        I'm in California dreaming
+                    </div>
+                    <div class="bubble me">
+                        <h6 class="sender"> John </h6>
+                        ... about who we used to be.
+                    </div>
+                    <div class="bubble me">
+                        <h6 class="sender"> John </h6>
+                        Are you serious?
+                    </div>
+                    <div class="bubble you">
+                        <h6 class="sender"> Sandy </h6>
+                        When we were younger and free...
+                    </div>
+                    <div class="bubble you">
+                        <h6 class="sender"> Sandy </h6>
+                        I've forgotten how it felt before
+                    </div>
+                    <div class="conversation-start">
+                        <span>Today, 5:38 PM</span>
+                    </div>
+                    <div class="bubble you">
+                        <h6 class="sender"> Tommy </h6>
+                        Hello, can you hear me?
+                    </div>
+                    <div class="bubble me">
+                        <h6 class="sender"> John </h6>
+                        ... about who we used to be.
+                    </div>
+                    <div class="bubble me">
+                        <h6 class="sender"> John </h6>
+                        Are you serious?
+                    </div>
+                    <div class="bubble you">
+                        <h6 class="sender"> Tommy </h6>
+                        When we were younger and free...
+                    </div>
+                    <div class="bubble you">
+                        <h6 class="sender"> Chloe </h6>
+                        I've forgotten how it felt before
+                    </div>
+                </div>
+                <div class="write">
+                    <input class="message" type="text" />
+                    <div class="enter__submit">
+                        <button class="button button_id_submit" type="submit">
+                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

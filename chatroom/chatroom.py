@@ -202,7 +202,6 @@ class Channel(webapp2.RequestHandler):
         user = getUser(self.request.uri)
 
         if user[0]:
-
             if result[0] is None:
                 messages = result[1]
 
@@ -215,9 +214,9 @@ class Channel(webapp2.RequestHandler):
                     'url_linktext': user[2],
                 }
 
-                if user[0]:
-                    template_values['channels'] = getCurrentChannels(user[0])
+                template_values['channels'] = getCurrentChannels(user[0])
 
+                print(template_values)
                 template = JINJA_ENVIRONMENT.get_template('chatroom.html')
                 self.response.write(template.render(template_values))
 
@@ -358,19 +357,19 @@ class SetChannel(webapp2.RequestHandler):
 # Filters
 def format_datetime(value, format='medium'):
     date = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
-    date = date.replace(tzinfo=pytz.UTC)
-    date = date.astimezone(pytz.timezone('US/Eastern'))
+    # date = date.replace(tzinfo=pytz.UTC)
+    # date = date.astimezone(pytz.timezone('US/Eastern'))
 
     return date.strftime("%-I:%M %p")
 
 def format_gap(time1, time2):
     date1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%S.%f")
-    date1 = date1.replace(tzinfo=pytz.UTC)
-    date1 = date1.astimezone(pytz.timezone('US/Eastern'))
+    # date1 = date1.replace(tzinfo=pytz.UTC)
+    # date1 = date1.astimezone(pytz.timezone('US/Eastern'))
 
     date2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%S.%f")
-    date2 = date2.replace(tzinfo=pytz.UTC)
-    date2 = date2.astimezone(pytz.timezone('US/Eastern'))
+    # date2 = date2.replace(tzinfo=pytz.UTC)
+    # date2 = date2.astimezone(pytz.timezone('US/Eastern'))
 
     diff = abs(date2 - date1)
 
@@ -388,9 +387,9 @@ JINJA_ENVIRONMENT.filters['gap'] = format_gap
 app = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/channels', Channels),
-    ('/channels/(\w+)', Channel),
+    ('/channels/([-\w]+)', Channel),
     ('/search', Search),
-    ('/channels/(\w+)/messages', Messages),
+    ('/channels/([-\w]+)/messages', Messages),
     ('/create', SetChannel),
 ], debug=True)
 # [END app]
