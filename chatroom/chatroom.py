@@ -5,7 +5,10 @@ import os
 import urllib
 import json
 import logging
+import pytz
 
+from pytz import timezone
+from datetime import datetime, timedelta
 from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
 
@@ -16,35 +19,10 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
+
 # [END imports]
 
 API_ENDPOINT = 'https://c5yaek0b1l.execute-api.us-east-1.amazonaws.com/dev/v2/'
-
-def getUser(uri):
-    user = users.get_current_user()
-
-    if user:
-        url = users.create_logout_url(uri)
-        url_linktext = 'Logout'
-    else:
-        url = users.create_login_url(uri)
-        url_linktext = 'Login'
-
-    return (user, url, url_linktext)
-
-def getCurrentChannels(user):
-    """Return the current Channels.
-
-    """
-    # return list(set(map(lambda key: key.parent().id().decode('utf_8'), entities)))
-    channels_query = Chatroom.query(ancestor=chatroom_key(user.email()))
-
-    channels = channels_query.fetch()
-
-    newChannels = []
-    for channel in channels:
-        newChannels.append(channel.channel)
-    return newChannels
 
 def getMessages(channel):
     """Return the messages on a channel.
@@ -52,6 +30,9 @@ def getMessages(channel):
     """
     try:
         url = "%schannels/%s/messages" % (API_ENDPOINT, channel)
+
+        urlfetch.set_default_fetch_deadline(30)
+
         result = urlfetch.fetch(url)
 
         if result.status_code == 200:
@@ -70,6 +51,8 @@ def publishMessage(channel, email, message):
     try:
         data = json.dumps({'email': email, 'text': message})
         headers = {'Content-Type': 'application/json'}
+
+        urlfetch.set_default_fetch_deadline(30)
 
         result = urlfetch.fetch(
                     url = "%schannels/%s/messages" % (API_ENDPOINT, channel),
@@ -134,6 +117,29 @@ def getChannel(channel):
         logging.exception('Caught exception fetching url')
         return (error, None)
 
+def getUser(uri):
+    """Return the current user.
+
+    """
+    user = users.get_current_user()
+
+    if user:
+        url = users.create_logout_url(uri)
+        url_linktext = 'Logout'
+    else:
+        url = users.create_login_url(uri)
+        url_linktext = 'Login'
+
+    return (user, url, url_linktext)
+
+def getCurrentChannels(user):
+    """Return the current Channels.
+
+    """
+    channels_query = Chatroom.query(ancestor=chatroom_key(user.email()))
+    channels = channels_query.fetch()
+
+    return [channel.channel for channel in channels]
 
 def chatroom_key(email):
     """Constructs a Datastore key for a Chatroom entity.
@@ -145,7 +151,7 @@ def chatroom_key(email):
 # [START Chatroom]
 class Chatroom(ndb.Model):
     """Sub model for representing an Chatroom."""
-    channel = ndb.StringProperty(indexed=False)
+    channel = ndb.StringProperty(indexed=True)
     created = ndb.DateTimeProperty(auto_now_add=True)
 # [END greeting]
 
@@ -163,14 +169,15 @@ class MainPage(webapp2.RequestHandler):
         }
 
         if user[0]:
-            template_values['channels'] = getCurrentChannels(user[0])
+            self.redirect('/channels')
+
 
         template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
 # [END MainPage]
 
-# [START Search]
-class Search(webapp2.RequestHandler):
+# [START Channels]
+class Channels(webapp2.RequestHandler):
 
     def get(self):
         user = getUser(self.request.uri)
@@ -181,16 +188,15 @@ class Search(webapp2.RequestHandler):
             'url_linktext': user[2],
         }
 
-        template = JINJA_ENVIRONMENT.get_template('search.html')
+        if user[0]:
+            template_values['channels'] = getCurrentChannels(user[0])
+
+        template = JINJA_ENVIRONMENT.get_template('chatroom.html')
         self.response.write(template.render(template_values))
+# [END Channels]
 
-# [END Search]
-
-
-# channel API
-
-class Channels(webapp2.RequestHandler):
-
+# [START Channel]
+class Channel(webapp2.RequestHandler):
     def get(self, channel):
         result = getMessages(channel)
 
@@ -213,35 +219,16 @@ class Channels(webapp2.RequestHandler):
 
             template = JINJA_ENVIRONMENT.get_template('chatroom.html')
             self.response.write(template.render(template_values))
+
         else:
-            self.redirect('/')
+            result = getChannel(channel)
 
-    def post(self):
-        
-        request = json.loads(self.request.body)
-        channel = request['name']
+            if result[0] is not None:
+                self.redirect('/channels')
+# [END Channel]
 
-        result = setChannel(channel)
-
-        user = users.get_current_user()
-
-        if user:
-            if result[0] is None:
-
-                key = user.email()
-                chatroom = Chatroom(parent=chatroom_key(key))
-                chatroom.channel = result[1]['channel']
-                chatroom.put()
-
-                self.response.write(json.dumps({'channel': result[1]['channel']}))
-            else:
-                self.abort(403)
-                self.response.write('empty')
-        else:
-            self.abort(403)
-            self.response.write('empty')
-
-class SearchChannel(webapp2.RequestHandler):
+# [START Search]
+class Search(webapp2.RequestHandler):
 
     def get(self):
         channel = self.request.get('channel')
@@ -264,14 +251,14 @@ class SearchChannel(webapp2.RequestHandler):
         else:
             self.abort(403)
             self.response.write('empty')
+# [END Search]
 
-class MessageHandler(webapp2.RequestHandler):
+class Messages(webapp2.RequestHandler):
 
     def get(self, channel):
         query = dict(self.request.GET.items())
 
         result = getMessages(channel)
-
         user = users.get_current_user()
 
         if user:
@@ -312,17 +299,84 @@ class MessageHandler(webapp2.RequestHandler):
                 self.abort(403)
                 self.response.write('empty')
 
+# [START SetChannel]
+class SetChannel(webapp2.RequestHandler):
 
-# [END guestbook]
+    def get(self):
+        user = getUser(self.request.uri)
 
+        template_values = {
+            'user': user[0],
+            'url': user[1],
+            'url_linktext': user[2],
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('create.html')
+        self.response.write(template.render(template_values))
+
+    def post(self):
+        
+        request = json.loads(self.request.body)
+        channel = request['name']
+
+        result = setChannel(channel)
+
+        user = users.get_current_user()
+
+        if user:
+            if result[0] is None:
+
+                key = user.email()
+                chatroom = Chatroom(parent=chatroom_key(key))
+                chatroom.channel = result[1]['channel']
+                chatroom.put()
+
+                self.response.write(json.dumps({'channel': result[1]['channel']}))
+            else:
+                self.abort(403)
+                self.response.write('empty')
+        else:
+            self.abort(403)
+            self.response.write('empty')
+
+# [END SetChannel]
+
+# Filters
+def format_datetime(value, format='medium'):
+    date = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+    date = date.replace(tzinfo=pytz.UTC)
+    date = date.astimezone(timezone('US/Eastern'))
+
+    return date.strftime("%-I:%M %p")
+
+def format_gap(time1, time2):
+    date1 = datetime.strptime(time1, "%Y-%m-%dT%H:%M:%S.%f")
+    date1 = date1.replace(tzinfo=pytz.UTC)
+    date1 = date1.astimezone(timezone('US/Eastern'))
+
+    date2 = datetime.strptime(time2, "%Y-%m-%dT%H:%M:%S.%f")
+    date2 = date2.replace(tzinfo=pytz.UTC)
+    date2 = date2.astimezone(timezone('US/Eastern'))
+
+    diff = abs(date2 - date1)
+
+    print(diff, diff > timedelta(minutes=60))
+
+    if diff > timedelta(minutes=60):
+        return "Today at %s" % (date2.strftime("%-I:%M %p"))
+    else:
+        return False
+
+JINJA_ENVIRONMENT.filters['datetime'] = format_datetime
+JINJA_ENVIRONMENT.filters['gap'] = format_gap
 
 # [START app]
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-    ('/messages/(\S+)', MessageHandler),
     ('/channels', Channels),
-    ('/searchChannel', SearchChannel),
-    ('/channels/(\S+)', Channels),
-    ('/search', Search)
+    ('/channels/(\w+)', Channel),
+    ('/search', Search),
+    ('/channels/(\w+)/messages', Messages),
+    ('/create', SetChannel),
 ], debug=True)
 # [END app]

@@ -35,12 +35,29 @@ $(function() {
         var $message_input = $('.write input.message');
         var $chatRoom = $('.chat.active-chat');
         var $email = $chatRoom.data('email');
+        var $currentChannel = $('.channel.active');
 
         $msg_button.on('click', function() {
             if($message_input.val() != "") {
                 publishMessage($message_input.val(), $chatRoom.data('chat'), function(error, result) {
                     if(!error) {
                         $chatRoom.append(`<div class="bubble me" data-time=${result.timestamp}>${result.message}</div>`);
+                        var time = new Date(new Date(result.timestamp).toString());
+                        var hour = time.getHours();
+                        var minutes = time.getMinutes();
+
+                        var currentTime = `${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`;
+
+                        if ($currentChannel.find('span.preview').length > 1) {
+                            $currentChannel.find('span.preview').text(result.message);
+                            $currentChannel.find('span.time').text(currentTime);
+                        } else {
+                            $currentChannel.append(`<span class="time">${currentTime}</span>`);
+                            $currentChannel.append(`<span class="preview">${result.message}</span>`);
+                        }
+
+                        $currentChannel.find('span.preview').text(result.message);
+                        $currentChannel.find('span.time').text(`${hour >= 12 ? hour -= 12 : hour == 0 ? 12 : hour}:${minutes} ${hour > 12 ? "PM": "AM"}`)
                         $message_input.val("")
                         $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
                     }
@@ -71,7 +88,7 @@ $(function() {
 
         const xhr = new XMLHttpRequest();
 
-        xhr.open("GET", `/searchChannel?channel=${channel}`);
+        xhr.open("GET", `/search?channel=${channel}`);
         xhr.setRequestHeader("Content-type", "application/json");
         
         xhr.onreadystatechange = () => {
@@ -102,7 +119,7 @@ $(function() {
         const xhr = new XMLHttpRequest();
         var body = JSON.stringify({text: text})
 
-        xhr.open("POST", `/messages/${channel}`);
+        xhr.open("POST", `/channels/${channel}/messages`);
         xhr.setRequestHeader("Content-type", "application/json");
         
         xhr.onreadystatechange = () => {
@@ -151,8 +168,8 @@ $(function() {
                             $chatRoom.scrollTop($chatRoom.prop("scrollHeight"));
                         }
                     }
-
-                    setTimeout(getStatus, 250);
+                    
+                    // setTimeout(getStatus, 250);
                 }
             };
             xhr.send(null);

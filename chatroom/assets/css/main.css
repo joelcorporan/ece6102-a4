@@ -346,7 +346,7 @@ body {
     border-right: 1px solid #e6e6e6;
     /*border-left: 1px solid #e6e6e6;*/
     width: calc(100% + 2px);
-    text-align: center;
+    /*text-align: center;*/
 }
 
 .container .left .channels .no-channels {

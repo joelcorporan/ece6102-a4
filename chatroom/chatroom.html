@@ -16,34 +16,26 @@
                     <button id="button-search"><i class="fa fa-search"></i></button>
                     <div class="spinner"><i class="fa fa-spinner"></i></div>
                 </div>
-                <!-- <a href="#" class="new-item-menu-float">
-                    <i class="fas fa-plus icon-float"></i>
-                </a>
-                <div class="new-item-menu-label-container">
-                    <div class="new-item-menu-label-text">Add Exchange</div>
-                    <i class="fas fa-play new-item-menu-label-arrow"></i>
-                </div> -->
-                <!-- <input type="text" /> -->
-                <!-- <a href="javascript:;" class="search"></a> -->
             </div>
             <ul class="channels">
 
                 {% if channels %}
 
                 {% for channel in channels %}
-                    {% if channel.channel == currentChannel %}
+                    {% if channel == currentChannel %}
 
                         <li class="channel active" data-chat="{{ channel }}">
                             <span class="name">{{ channel }}</span>
-                            <!-- <span class="time">2:09 PM</span>
-                            <span class="preview">I was wondering...</span> -->
+                            {% if messages|length > 1 %}
+                                <span class="time">{{ messages[-1].timestamp|datetime() }}</span>
+                                <span class="preview">{{ messages[-1].message }}</span>
+                            {% endif %}
+
                         </li>
                     {% else %}
 
                         <li class="channel" data-chat="{{ channel }}">
                             <span class="name">{{ channel }}</span>
-                            <!-- <span class="time">2:09 PM</span>
-                            <span class="preview">I was wondering...</span> -->
                         </li>
 
                     {% endif %}
@@ -57,29 +49,16 @@
             </ul>
         </div>
         <div class="right">
-                    <!-- <div class="nav-collapse collapse pull-right"> -->
-    <!-- <a href="{{ url|safe }}" class="btn">{{ url_linktext }}</a> -->
-  <!-- </div> -->
             <div class="top"><span>To: <span class="name"> {{currentChannel}} </span></span></div>
-            <!-- <div class="chat" data-chat="person1">
-                <div class="conversation-start">
-                    <span>Today, 6:48 AM</span>
-                </div>
-                <div class="bubble you">
-                    Hello,
-                </div>
-                <div class="bubble you">
-                    it's me.
-                </div>
-                <div class="bubble you">
-                    I was wondering...
-                </div>
-            </div> -->
-
                 <div class="chat active-chat" data-chat="{{ currentChannel }}" data-email="{{ email }}">
-                <!-- <div class="conversation-start">
-                    <span>Today, 5:38 PM</span>
-                </div> -->
+
+                {% if messages|length > 0 %}
+
+                    <div class="conversation-start">
+                        <span>Today at {{ messages[0].timestamp|datetime() }}</span>
+                    </div>
+
+                {% endif %}
 
                 {% for message in messages %}
                     {% if message.email.lower() == user.email().lower() %}
@@ -97,140 +76,20 @@
 
                     {% endif %}
 
+                    {% if messages[loop.index] %}
+                        {% set time_gap = message.timestamp|gap(messages[loop.index].timestamp) %}
+                            {% if time_gap %}
+                                <div class="conversation-start">
+                                    <span>{{ time_gap }}</span>
+                                </div>
+                            {% endif %}
+                    {% endif %}
+
                 {% endfor %}
-
-                <!-- <div class="bubble you">
-                    Hello, can you hear me?
-                </div>
-                <div class="bubble you">
-                    I'm in California dreaming
-                </div>
-                <div class="bubble me">
-                    ... about who we used to be.
-                </div>
-                <div class="bubble me">
-                    Are you serious?
-                </div>
-                <div class="bubble you">
-                    When we were younger and free...
-                </div>
-                <div class="bubble you">
-                    I've forgotten how it felt before
-                </div>
-                <div class="conversation-start">
-                    <span>Today, 5:38 PM</span>
-                </div>
-                <div class="bubble you">
-                    Hello, can you hear me?
-                </div>
-                <div class="bubble you">
-                    <h6 class="sender"> Joel Corporan</h6>
-                    <p> I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming I'm in California dreaming </p>
-                </div>
-                <div class="bubble me">
-                    ... about who we used to be.
-                </div>
-                <div class="bubble me">
-                    Are you serious?
-                </div>
-                <div class="bubble you">
-                    When we were younger and free...
-                </div>
-                <div class="bubble you">
-                    I've forgotten how it felt before
-                </div> -->
-
-<!--                     <div class="chat" data-chat="person3">
-                <div class="conversation-start">
-                    <span>Today, 3:38 AM</span>
-                </div>
-                <div class="bubble you">
-                    Hey human!
-                </div>
-                <div class="bubble you">
-                    Umm... Someone took a shit in the hallway.
-                </div>
-                <div class="bubble me">
-                    ... what.
-                </div>
-                <div class="bubble me">
-                    Are you serious?
-                </div>
-                <div class="bubble you">
-                    I mean...
-                </div>
-                <div class="bubble you">
-                    It’s not that bad...
-                </div>
-                <div class="bubble you">
-                    But we’re probably gonna need a new carpet.
-                </div>
-            </div> -->
-<!--                     <div class="chat" data-chat="person4">
-                <div class="conversation-start">
-                    <span>Yesterday, 4:20 PM</span>
-                </div>
-                <div class="bubble me">
-                    Hey human!
-                </div>
-                <div class="bubble me">
-                    Umm... Someone took a shit in the hallway.
-                </div>
-                <div class="bubble you">
-                    ... what.
-                </div>
-                <div class="bubble you">
-                    Are you serious?
-                </div>
-                <div class="bubble me">
-                    I mean...
-                </div>
-                <div class="bubble me">
-                    It’s not that bad...
-                </div>
-            </div> -->
-<!--                     <div class="chat" data-chat="person5">
-                <div class="conversation-start">
-                    <span>Today, 6:28 AM</span>
-                </div>
-                <div class="bubble you">
-                    Wasup
-                </div>
-                <div class="bubble you">
-                    Wasup
-                </div>
-                <div class="bubble you">
-                    Wasup for the third time like is <br />you blind bitch
-                </div>
-
-            </div> -->
-<!--                     <div class="chat" data-chat="person6">
-                <div class="conversation-start">
-                    <span>Monday, 1:27 PM</span>
-                </div>
-                <div class="bubble you">
-                    So, how's your new phone?
-                </div>
-                <div class="bubble you">
-                    You finally have a smartphone :D
-                </div>
-                <div class="bubble me">
-                    Drake?
-                </div>
-                <div class="bubble me">
-                    Why aren't you answering?
-                </div>
-                <div class="bubble you">
-                    howdoyoudoaspace
-                </div>
-            </div> -->
         </div>
 
         <div class="write">
-                <!-- <a href="javascript:;" class="write-link attach"></a> -->
                 <input class="message" type="text" />
-                <!-- <a href="javascript:;" class="write-link smiley"></a> -->
-                <!-- <a href="javascript:;" class="write-link send"></a> -->
                 <div class="enter__submit">
                     <button class="button button_id_submit" type="submit">
                         <i class="fa fa-paper-plane" aria-hidden="true"></i>
@@ -247,7 +106,7 @@
     </div>
 </div>
 
-<a href="/search" class="new-item-menu-float">
+<a href="/create" class="new-item-menu-float">
     <i class="fas fa-plus icon-float"></i>
 </a>
 <div class="new-item-menu-label-container">

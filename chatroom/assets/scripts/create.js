@@ -29,7 +29,7 @@ $(function() {
         const xhr = new XMLHttpRequest();
         var body = JSON.stringify({name: $userInput});
 
-        xhr.open("POST", '/channels');
+        xhr.open("POST", '/create');
         xhr.setRequestHeader("Content-type", "application/json");
         
         xhr.onreadystatechange = () => {
