@@ -231,6 +231,7 @@ $(function() {
         var $chats = $chatRoom.find('div.bubble');
 
         var timeLookUp = $chats[$chats.length - (parseInt(remaining) - $chats.length) - 1];
+        console.log(timeLookUp, ($chats.length - (parseInt(remaining) - $chats.length) - 1))
         var lastTime = timeLookUp.data('time');
 
         const xhr = new XMLHttpRequest();
