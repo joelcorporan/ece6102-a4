@@ -72,3 +72,15 @@ After signing in, the user can see his/her chat channels.
 # 3. System Diagram
 
 ![](https://github.com/joelcorporan/ece6102-a4/blob/master/img/p4.png)
+
+# 4 Demo Videos
+
+Create Channel 
+https://www.youtube.com/watch?v=LqyYE_oJDgI
+
+Search Channel
+https://www.youtube.com/watch?v=KcQI7bp83UU
+
+ChatRoom
+https://www.youtube.com/watch?v=VJIgaSs0AGs
+
