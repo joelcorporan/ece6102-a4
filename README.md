@@ -59,19 +59,35 @@ After signing in, the user can see his/her chat channels.
 
 ## requirement:
 
-0. User should sign in with email to start the service
+0. Users should sign in with a google account before adding a channel, sending or seeing a message in the chatroom. No chats should be visible without signing in.
 
-1. NDB models can be used to store "user : list of channels" pairs.
+1. There should be a way for the user to create a channel through the interface.
 
-2. Each Channel should map to 1 DyanamoDB table.
 
-3. There should be a way to creat a channel table in the UI.
+2. Users should be able to send a message on any existing channel.
 
-4. There should be a way to store/send a message to a channel.
+3. It should be possible to switch between channels seamlessly through the user interface.
+
+4. The delay in message exchange should be minimal.
+
+5. There should be a way for the user to determine the channel he/she is sending a message on.
+
+6. There should be a way for any user to determine the sender of a message. Furthermore, user’s messages should be distinguishable from other messages. 
+
+7. The user should be able to see the complete history of a channel.
+
+8. There should be a way for the user to search for a channel among the existing channels.
+
+9. The use of  WebSocket (STATEFUL) Connections is prohibited. Only HTTP (STATELESS) connections allow.
+
+10. The content should be only rendered once, and web should use poling for new update.
+
+11. IMPORTANT! A user should, under no condition, miss a message. Furthermore, the order of messages should be the same on every user’s machine. The implementation CANNOT BE refreshing the page.
 
 # 3. System Diagram
 
-![](https://github.com/joelcorporan/ece6102-a4/blob/master/img/p4.png)
+## System Architecture ![](https://github.com/joelcorporan/ece6102-a4/blob/master/img/sys.png)
+## Item in DynamoDB Table ![](https://github.com/joelcorporan/ece6102-a4/blob/master/img/table.png)
 
 # 4 Demo Videos
 
